@@ -9,6 +9,8 @@ import ServerLayout from './layouts/ServerLayout';
 // Pages
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import ServerList from './pages/ServerList';
+import Settings from './pages/Settings';
 import ServerDashboard from './pages/ServerDashboard';
 import ReviewPage from './pages/ReviewPage';
 
@@ -28,7 +30,8 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
-              {/* Other admin routes can be added here */}
+              <Route path="servers" element={<ServerList />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
           </Route>
 

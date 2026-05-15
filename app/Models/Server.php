@@ -21,7 +21,7 @@ class Server extends Model
 
     public function nfcCard(): HasOne
     {
-        return $this->hasOne(NfcCard::class);
+        return $this->hasOne(NFCCard::class);
     }
 
     public function reviews(): HasMany
