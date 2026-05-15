@@ -11,18 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('nfc_cards', function (Blueprint $table) {
     $table->id();
 
-    $table->string('full_name');
+    $table->string('uid')->unique();
 
-    $table->string('email')->unique();
+    $table->string('public_token')->unique();
 
-    $table->string('password');
-
-    $table->enum('role', ['ADMIN', 'SERVER']);
+    $table->string('qr_code_url')->nullable();
 
     $table->boolean('is_active')->default(true);
+
+    $table->timestamp('assigned_at')->nullable();
+
+    $table->foreignId('server_id')
+          ->unique()
+          ->constrained()
+          ->cascadeOnDelete();
 
     $table->timestamps();
 });
@@ -33,8 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('n_f_c_cards');
     }
 };
