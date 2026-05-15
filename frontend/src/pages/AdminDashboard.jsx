@@ -1,4 +1,6 @@
-import { TrendingUp, Users, Star, Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import api from '../api/axios';
+import { TrendingUp, Users, Star, Activity, Loader2 } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, trend }) => (
   <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
@@ -6,8 +8,8 @@ const StatCard = ({ title, value, icon: Icon, trend }) => (
       <div className="h-12 w-12 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
         <Icon size={24} />
       </div>
-      {trend && (
-        <span className={`text-sm font-medium ${trend > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+      {trend != null && (
+        <span className={`text-sm font-medium ${trend > 0 ? 'text-emerald-600' : trend < 0 ? 'text-red-500' : 'text-slate-400'}`}>
           {trend > 0 ? '+' : ''}{trend}%
         </span>
       )}
@@ -18,6 +20,35 @@ const StatCard = ({ title, value, icon: Icon, trend }) => (
 );
 
 const AdminDashboard = () => {
+  const [stats, setStats] = useState({
+    totalReviews: 0,
+    averageRating: 0,
+    activeServers: 0,
+    nfcTapsToday: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/manager/stats');
+        // Assume API returns object with these keys or map them accordingly
+        setStats({
+          totalReviews: response.data.total_reviews ?? 0,
+          averageRating: response.data.avg_rating ?? response.data.average_rating ?? 0,
+          activeServers: response.data.active_servers ?? 0,
+          nfcTapsToday: response.data.nfc_taps_today ?? 0
+        });
+      } catch (error) {
+        console.error("Failed to load dashboard stats", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
@@ -25,12 +56,18 @@ const AdminDashboard = () => {
         <p className="text-slate-500 mt-1">Here's what's happening at your restaurant today.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Reviews" value="1,284" icon={Star} trend={12.5} />
-        <StatCard title="Average Rating" value="4.8" icon={TrendingUp} trend={2.1} />
-        <StatCard title="Active Servers" value="24" icon={Users} trend={0} />
-        <StatCard title="NFC Taps Today" value="156" icon={Activity} trend={18.2} />
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Reviews" value={stats.totalReviews} icon={Star} trend={null} />
+          <StatCard title="Average Rating" value={Number(stats.averageRating).toFixed(1)} icon={TrendingUp} trend={null} />
+          <StatCard title="Active Servers" value={stats.activeServers} icon={Users} trend={null} />
+          <StatCard title="NFC Taps Today" value={stats.nfcTapsToday} icon={Activity} trend={null} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm lg:col-span-2">
