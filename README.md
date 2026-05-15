@@ -1,58 +1,281 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Revio
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Revio is a smart restaurant feedback management platform that uses NFC technology to simplify customer review collection and improve service quality.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Each server in the restaurant owns a unique NFC card. After finishing their meal, customers can scan the card using their smartphone and instantly access a feedback form to rate their experience and leave comments.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The platform centralizes all customer reviews inside a management dashboard where restaurant managers can:
+- monitor customer satisfaction,
+- evaluate server performance,
+- manage public testimonials,
+- analyze service quality,
+- and handle critical reviews.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# Problem Statement
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Traditional restaurant feedback systems often suffer from:
+- low customer participation,
+- inefficient paper feedback collection,
+- lack of real-time analytics,
+- poor server performance tracking,
+- and unmanaged online reputation.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Revio solves these issues through:
+- instant NFC-based review collection,
+- centralized analytics,
+- testimonial moderation,
+- performance monitoring,
+- and smart review management.
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+# Main Objectives
 
-```bash
-composer require laravel/boost --dev
+- Simplify customer feedback collection
+- Improve restaurant service quality
+- Track server performance
+- Increase customer engagement
+- Provide real-time management insights
+- Modernize restaurant operations using NFC technology
 
-php artisan boost:install
+---
+
+# Core Features
+
+## Customer Feedback System
+
+- NFC card scanning
+- Mobile-friendly review form
+- Star rating system
+- Comment submission
+- Anonymous feedback support
+
+---
+
+## Review Management
+
+- Review approval workflow
+- Critical review detection
+- Positive testimonial moderation
+- Review filtering system
+- Public testimonial management
+
+---
+
+## Manager Dashboard
+
+The manager dashboard allows:
+- server management,
+- NFC card assignment,
+- review monitoring,
+- performance analysis,
+- statistics visualization,
+- testimonial approval,
+- critical review tracking.
+
+---
+
+## Server Space
+
+Each server can:
+- access personal statistics,
+- monitor ratings,
+- view rankings,
+- consult review history.
+
+Servers cannot:
+- modify reviews,
+- delete reviews,
+- approve testimonials,
+- access administration settings.
+
+---
+
+# Review Workflow
+
+```text
+Client scans NFC card
+        ↓
+Feedback form opens
+        ↓
+Client submits review
+        ↓
+Review saved in database
+        ↓
+System analyzes rating
+        ↓
+Positive Review → Pending Approval
+Neutral Review → Internal Analytics
+Negative Review → Critical Alert
+        ↓
+Manager reviews feedback
+        ↓
+Approved testimonials appear publicly
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+# Review Status System
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Status | Description |
+|---|---|
+| PENDING | Newly submitted review |
+| APPROVED | Approved for public display |
+| REJECTED | Refused by manager |
+| CRITICAL | Negative review requiring attention |
+| FEATURED | Highlighted testimonial |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# User Roles
 
-## Security Vulnerabilities
+## Manager / Admin
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The manager can:
+- manage servers,
+- assign NFC cards,
+- approve testimonials,
+- reject testimonials,
+- view analytics,
+- monitor restaurant performance,
+- receive critical alerts.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Server
+
+The server can:
+- view personal statistics,
+- monitor average rating,
+- access rankings,
+- consult review history.
+
+---
+
+## Customer
+
+The customer can:
+- scan NFC cards,
+- submit reviews,
+- rate service quality,
+- write comments,
+- send anonymous feedback.
+
+---
+
+# Business Rules
+
+- Each NFC card must be unique.
+- One server can only own one active NFC card.
+- Negative reviews are never displayed publicly.
+- Only managers can approve public testimonials.
+- Servers cannot modify or delete customer reviews.
+
+---
+
+# Dashboard Features
+
+The dashboard provides:
+- recent reviews,
+- critical review alerts,
+- best-performing servers,
+- global restaurant statistics,
+- average rating monitoring,
+- review management,
+- testimonial moderation.
+
+---
+
+# Future Improvements
+
+- QR Code support
+- Real-time notifications
+- AI review analysis
+- Reward system for servers
+- Multi-restaurant management
+- Dedicated mobile application
+- Google Reviews integration
+
+---
+
+# Technology Stack
+
+## Frontend
+
+- React
+- JavaScript
+- CSS
+
+---
+
+## Backend
+
+- PHP
+- Laravel
+- Laravel Sanctum
+- REST API Architecture
+
+---
+
+## Database
+
+- MySQL
+
+---
+
+# Project Architecture
+
+The project follows a modern client-server architecture:
+
+```text
+React Frontend
+       ↓
+Laravel REST API
+       ↓
+MySQL Database
+```
+
+---
+
+# Security Features
+
+- Authentication system
+- Role-based authorization
+- Protected API routes
+- Password encryption
+- Review moderation system
+
+---
+
+# UML & Conception
+
+The project includes:
+- Use Case Diagram
+- Class Diagram
+- Sequence Diagram
+- Activity Diagram
+- ERD (Entity Relationship Diagram)
+
+---
+
+# Project Vision
+
+Revio aims to modernize customer feedback collection in restaurants through smart NFC interactions and data-driven management tools.
+
+The platform combines:
+- customer experience optimization,
+- employee performance tracking,
+- restaurant analytics,
+- and digital reputation management
+into a single scalable solution.
+
+---
+
+# Author
+
+Revio — Smart Restaurant Feedback Management Platform
