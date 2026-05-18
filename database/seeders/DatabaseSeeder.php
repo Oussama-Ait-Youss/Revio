@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin account
+        // Admin account to enter the dashboard
         User::create([
             'full_name' => 'Admin User',
             'email' => 'admin@revio.com',
@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'ADMIN',
             'is_active' => true,
         ]);
+        // 
 
         // Server account
         User::create([
