@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin account to enter the dashboard
+        // ;alsddjf;lkasjdf;lajsd;lfkfjask;ldfj;lkdsa
         User::create([
             'full_name' => 'Admin User',
             'email' => 'admin@revio.com',
