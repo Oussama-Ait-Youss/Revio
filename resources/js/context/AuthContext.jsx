@@ -1,0 +1,113 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../api/axios';
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [loading, setLoading] = useState(true);
+
+  const handleLocalLogout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
+  };
+
+  // Sync Axios headers whenever the token changes
+  useEffect(() => {
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common['Authorization'];
+    }
+
+    // Global Response Interceptor for 401s
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          handleLocalLogout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(interceptor);
+    };
+  }, [token]);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      if (token) {
+        try {
+          const response = await api.get('/user');
+          setUser(response.data);
+          localStorage.setItem('user', JSON.stringify(response.data));
+        } catch (error) {
+          console.error("Session expired or invalid:", error);
+          handleLocalLogout();
+        }
+      }
+      setLoading(false);
+    };
+
+    loadUser();
+  }, [token]);
+
+  const login = async (email, password) => {
+    try {
+      // Laravel Sanctum standard check
+      const response = await api.post('/login', { email, password });
+      
+      // IMPORTANT: Matching the keys we defined in AuthController.php
+      // We used 'access_token' and 'user'
+      const { access_token, user: userData } = response.data; 
+      
+      if (!access_token) throw new Error("No token received");
+
+      setToken(access_token);
+      setUser(userData);
+      
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      return { success: true, role: userData.role };
+    } catch (error) {
+      console.error("Login attempt failed:", error.response?.data || error.message);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Invalid credentials or server error' 
+      };
+    }
+  };
+
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const logout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (error) {
+      console.error("Logout error on server:", error);
+    } finally {
+      handleLocalLogout();
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);
