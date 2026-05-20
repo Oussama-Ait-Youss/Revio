@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import axiosClient from "../api/axios";
+import axiosClient from "../../api/axios";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
