@@ -32,4 +32,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function server(){
+        return $this->hasOne(Server::class);
+    }
 }
