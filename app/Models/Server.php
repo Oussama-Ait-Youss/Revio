@@ -22,7 +22,8 @@ class Server extends Model
         return $this->beglongsTo(User::class);
     }
     public function reviews()
-{
-    return $this->hasMany(Review::class);
-}
+    {
+        return $this->hasMany(Review::class);
+    }
+    
 }

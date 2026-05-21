@@ -61,4 +61,24 @@ class ServerController extends Controller
             Server::with('user')->findOrFail($id)
         );
     }
+    // get my reviews
+    public function myReviews(Request $request)
+    {
+        $user = $request->user();
+    
+        $server = Server::where('user_id', $user->id)->first();
+    
+        if (!$server) {
+            return response()->json([
+                'message' => 'No server profile found'
+            ], 404);
+        }
+    
+        $reviews = $server->reviews()->latest()->get();
+    
+        return response()->json([
+            'server' => $server,
+            'reviews' => $reviews
+        ]);
+    }
 }
