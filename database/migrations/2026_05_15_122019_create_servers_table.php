@@ -11,18 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('servers', function (Blueprint $table) {
     $table->id();
 
-    $table->string('full_name');
+    $table->foreignId('user_id')
+          ->unique()
+          ->constrained()
+          ->cascadeOnDelete();
 
-    $table->string('email')->unique();
+    $table->string('phone');
 
-    $table->string('password');
-
-    $table->enum('role', ['ADMIN', 'SERVER']);
-
-    $table->boolean('is_active')->default(true);
+    $table->integer('total_reviews')->default(0);
 
     $table->timestamps();
 });
@@ -33,8 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('servers');
     }
 };
