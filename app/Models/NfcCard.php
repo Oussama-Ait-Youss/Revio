@@ -27,4 +27,8 @@ class NfcCard extends Model
     {
         return $this->belongsTo(Server::class);
     }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }
