@@ -3,63 +3,82 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Server;
 use Illuminate\Http\Request;
 
 class ServerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    // display servers
+    public function index(){
+        return response()->json(
+            Server::with('user')->get()
+        );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // create a server
+    public function store(Request $request){
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'phone' => 'nullable|string',
+        ]);
+
+        $server = Server::create([
+            'user_id' => $data['user_id'],
+            'phone' => $data['phone'] ?? null,
+            'total_reviews' => 0,
+        ]);
+
+        return response()->json($server->load('user'), 201);
+    }
+    // UPDATE server
+    public function update(Request $request, $id)
     {
-        //
+        $server = Server::findOrFail($id);
+
+        $server->update($request->only([
+            'phone',
+            'total_reviews'
+        ]));
+
+        return response()->json($server->load('user'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // DELETE server
+    public function destroy($id)
     {
-        //
+        $server = Server::findOrFail($id);
+        $server->delete();
+
+        return response()->json([
+            'message' => 'Server deleted successfully'
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // GET single server
+    public function show($id)
     {
-        //
+        return response()->json(
+            Server::with('user')->findOrFail($id)
+        );
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    // get my reviews
+    public function myReviews(Request $request)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $user = $request->user();
+    
+        $server = Server::where('user_id', $user->id)->first();
+    
+        if (!$server) {
+            return response()->json([
+                'message' => 'No server profile found'
+            ], 404);
+        }
+    
+        $reviews = $server->reviews()->latest()->get();
+    
+        return response()->json([
+            'server' => $server,
+            'reviews' => $reviews
+        ]);
     }
 }
