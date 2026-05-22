@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { Eye, EyeOff, UtensilsCrossed } from "lucide-react";
 import axiosClient from "../../api/axios";
  
 function Login() {
+    const { user, login } = useAuth();
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -26,10 +30,9 @@ function Login() {
             const response = await axiosClient.post("/login", formData);
             const { access_token, user } = response.data;
  
-            localStorage.setItem("token", access_token);
-            localStorage.setItem("user", JSON.stringify(user));
- 
-            window.location.href = "/dashboard";
+            login(user, access_token);
+            const destination = user.role === "ADMIN" ? "/dashboard" : "/dashboard/servers";
+            navigate(destination, { replace: true });
         } catch (error) {
             if (error.response?.status === 422) {
                 setError("Invalid email or password. Please try again.");
@@ -40,6 +43,12 @@ function Login() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!user) return;
+        const destination = user.role === "ADMIN" ? "/dashboard" : "/dashboard/servers";
+        navigate(destination, { replace: true });
+    }, [user, navigate]);
  
     return (
         <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: "'Georgia', serif" }}>

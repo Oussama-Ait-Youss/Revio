@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('servers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('phone')->nullable();
-            $table->integer('total_reviews')->default(0);
-            $table->timestamps();
+        Schema::table('servers', function (Blueprint $table) {
+            if (!Schema::hasColumn('servers', 'deleted_at')) {
+                $table->softDeletes();
+            }
         });
     }
 
@@ -25,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('servers');
+        Schema::table('servers', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

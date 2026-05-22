@@ -6,11 +6,13 @@ import {
     LayoutDashboard, Users, CreditCard, Star, LogOut, Menu, X
 } from "lucide-react";
 
-const navItems = [
+const adminNav = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { label: "Servers", icon: Users, path: "/dashboard/servers" },
-    { label: "NFC Cards", icon: CreditCard, path: "/dashboard/nfc" },
-    { label: "Reviews", icon: Star, path: "/dashboard/reviews" },
+];
+
+const serverNav = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
 ];
 
 function DashboardLayout({ children }) {
@@ -18,6 +20,13 @@ function DashboardLayout({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    const navItems = user?.role === "ADMIN" ? adminNav : user?.role === "SERVER" ? serverNav : [];
+    const roleLabel = user
+        ? user.role === "ADMIN"
+            ? "Admin Dashboard"
+            : "Server Portal"
+        : "";
 
     const handleLogout = async () => {
         try {
@@ -63,6 +72,9 @@ function DashboardLayout({ children }) {
                 </div>
 
                 {/* Nav */}
+                <div style={{ padding: "18px 12px", color: "rgba(255,255,255,0.75)", fontSize: "12px", letterSpacing: "0.1em" }}>
+                    {roleLabel}
+                </div>
                 <nav style={{ flex: 1, padding: "12px 8px" }}>
                     {navItems.map(({ label, icon: Icon, path }) => {
                         const active = location.pathname === path;

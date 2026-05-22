@@ -1,11 +1,25 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "../context/AuthContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import ProtectedRoute from "../guards/ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 import Login from "../pages/auth/Login";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
-import Servers from "../pages/servers/Servers";
+import ServerDashboard from "../pages/dashboard/ServerDashboard";
+import Servers from "../pages/dashboard/Servers";
+
+function DashboardEntry() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/" replace />;
+    return user.role === "ADMIN" ? <AdminDashboard /> : <ServerDashboard />;
+}
+
+function AdminOnly({ children }) {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/" replace />;
+    if (user.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
+    return children;
+}
 
 function AppRoutes() {
     return (
@@ -16,15 +30,17 @@ function AppRoutes() {
                     <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <DashboardLayout>
-                                <AdminDashboard />
+                                <DashboardEntry />
                             </DashboardLayout>
                         </ProtectedRoute>
                     } />
                     <Route path="/dashboard/servers" element={
                         <ProtectedRoute>
-                            <DashboardLayout>
-                                <Servers />
-                            </DashboardLayout>
+                            <AdminOnly>
+                                <DashboardLayout>
+                                    <Servers />
+                                </DashboardLayout>
+                            </AdminOnly>
                         </ProtectedRoute>
                     } />
                 </Routes>

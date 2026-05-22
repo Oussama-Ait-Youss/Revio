@@ -12,7 +12,7 @@ class Server extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['user_id', 'phone', 'total_reviews'];
+    protected $fillable = ['user_id', 'phone', 'total_reviews','google_review_url'];
 
     public function user(): BelongsTo
     {
