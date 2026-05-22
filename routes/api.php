@@ -17,12 +17,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // server management
     Route::middleware('is_admin')->group(function (){
         Route::get('/servers', [ServerController::class, 'index']);
-        Route::get('/my-reviews', [ServerController::class, 'myReviews']);
         Route::get('/servers/{id}', [ServerController::class, 'show']);
         Route::post('/servers', [ServerController::class, 'store']);
         Route::put('/servers/{id}', [ServerController::class, 'update']);
         Route::delete('/servers/{id}', [ServerController::class, 'destroy']);
-        });
+    });
+
+    Route::get('/my-reviews', [ServerController::class, 'myReviews']);
         // nfc card management
          Route::get('/nfc-cards', [NfcCardController::class, 'index']);
         Route::post('/nfc-cards', [NfcCardController::class, 'store']);
