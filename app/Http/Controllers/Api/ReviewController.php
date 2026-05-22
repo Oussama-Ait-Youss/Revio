@@ -59,4 +59,29 @@ class ReviewController extends Controller
             ], 201);
         });
     }
+        public function getServerByToken($token)
+    {
+        $card = NfcCard::where('public_token', $token)
+            ->where('is_active', true)
+            ->with('server.user')
+            ->first();
+
+        if (!$card) {
+            return response()->json([
+                'message' => 'Invalid or inactive NFC card.'
+            ], 404);
+        }
+
+        if (!$card->server) {
+            return response()->json([
+                'message' => 'No server assigned to this card.'
+            ], 404);
+        }
+
+        return response()->json([
+            'server_id'   => $card->server->id,
+            'server_name' => $card->server->user->full_name,
+            'token'       => $token,
+        ]);
+    }
 }
