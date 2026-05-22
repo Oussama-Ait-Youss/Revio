@@ -26,22 +26,29 @@ class ReviewController extends Controller
             'message' => 'Server not found'
         ], 404);
     }
+        public function getServerByToken($token)
+    {
+        $card = NfcCard::where('public_token', $token)
+            ->where('is_active', true)
+            ->with('server.user')
+            ->first();
 
-    $review = Review::create([
-        'server_id' => $server->id,
-        'rating' => $request->rating,
-        'comment' => $request->comment,
-    ]);
+        if (!$card) {
+            return response()->json([
+                'message' => 'Invalid or inactive NFC card.'
+            ], 404);
+        }
 
-    $server->increment('total_reviews');
+        if (!$card->server) {
+            return response()->json([
+                'message' => 'No server assigned to this card.'
+            ], 404);
+        }
 
-    // DECISION LOGIC
-    $isPositive = $request->rating >= 4;
-
-    return response()->json([
-        'message' => 'Review submitted successfully',
-        'redirect_to_google' => $isPositive ? true : false,
-        'google_url' => $isPositive ? $server->google_review_url : null,
-    ], 201);
-}
+        return response()->json([
+            'server_id'   => $card->server->id,
+            'server_name' => $card->server->user->full_name,
+            'token'       => $token,
+        ]);
+    }
 }
