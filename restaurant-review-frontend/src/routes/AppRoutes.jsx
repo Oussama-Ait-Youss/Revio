@@ -7,6 +7,10 @@ import Login from "../pages/auth/Login";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ServerDashboard from "../pages/dashboard/ServerDashboard";
 import Servers from "../pages/dashboard/Servers";
+import ClientReview from "../pages/public/ClientReview";
+
+
+<Route path="/review/:token" element={<ClientReview />} />
 
 function DashboardEntry() {
     const { user } = useAuth();
