@@ -4,6 +4,10 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ServerController;
 use App\Http\Controllers\Api\NfcCardController;
+use App\Http\Controllers\Api\ReviewController;
+
+Route::get('/review/{token}', [ReviewController::class, 'getServerByToken']);
+Route::post('/review', [ReviewController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login']);
 
