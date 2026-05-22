@@ -5,7 +5,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 import Login from "../pages/auth/Login";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
-import Servers from "../pages/servers/Servers";
+import Servers from "../pages/dashboard/Servers";
 
 function AppRoutes() {
     return (
