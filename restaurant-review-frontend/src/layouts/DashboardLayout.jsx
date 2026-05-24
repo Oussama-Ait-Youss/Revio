@@ -9,6 +9,7 @@ import {
 const adminNav = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { label: "Servers", icon: Users, path: "/dashboard/servers" },
+    { label: "NFC Cards", icon: CreditCard, path: "/dashboard/nfc-cards" },
     { label: "Reviews", icon: FileSearch, path: "/dashboard/reviews" },
 ];
 

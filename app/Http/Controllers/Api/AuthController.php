@@ -33,7 +33,7 @@ class AuthController extends Controller
         }
 
         // Create token with the user's role as a "ability"
-        $token = $user->createToken('auth_token', [$user->role])->plainTextToken;
+        $token = $user->createToken('auth_token', [$user->role?->name ?? ''])->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
@@ -41,7 +41,7 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'full_name' => $user->full_name,
-                'role' => $user->role,
+                'role' => $user->role?->name,
             ]
         ]);
     }

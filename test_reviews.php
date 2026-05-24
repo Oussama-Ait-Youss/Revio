@@ -1,0 +1,1 @@
+<?php require 'vendor/autoload.php'; \ = require_once 'bootstrap/app.php'; \ = \->make(Illuminate\Contracts\Console\Kernel::class); \->bootstrap(); \ = Illuminate\Http\Request::create('/api/reviews', 'GET'); \ = app(App\Http\Controllers\Api\ReviewController::class)->index(\); echo json_encode(\->getData());

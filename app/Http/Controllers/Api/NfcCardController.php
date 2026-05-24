@@ -14,7 +14,7 @@ class NfcCardController extends Controller
      */
     public function index()
     {
-        $cards = NfcCard::with('server')->latest()->get();
+        $cards = NfcCard::with('server.user')->latest()->get();
 
         return response()->json([
             'data' => $cards
@@ -27,13 +27,16 @@ class NfcCardController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'uid' => 'required|string|unique:nfc_cards,uid',
+            'public_token' => 'required|string|unique:nfc_cards,public_token',
+            'qr_code_url' => 'nullable|url',
             'server_id' => 'nullable|exists:servers,id',
         ]);
 
         $card = NfcCard::create([
-            'uid' => 'NFC_' . strtoupper(Str::random(10)),
-            'public_token' => Str::random(32),
-            'qr_code_url' => null, // you can generate later
+            'uid' => $request->uid,
+            'public_token' => $request->public_token,
+            'qr_code_url' => $request->qr_code_url,
             'is_active' => true,
             'assigned_at' => $request->server_id ? now() : null,
             'server_id' => $request->server_id,
@@ -41,7 +44,7 @@ class NfcCardController extends Controller
 
         return response()->json([
             'message' => 'NFC card created successfully',
-            'data' => $card->load('server')
+            'data' => $card->load('server.user')
         ], 201);
     }
 
@@ -69,7 +72,7 @@ class NfcCardController extends Controller
 
         return response()->json([
             'message' => 'Card assigned successfully',
-            'data' => $card->load('server')
+            'data' => $card->load('server.user')
         ]);
     }
 
