@@ -29,9 +29,7 @@ class ReviewController extends Controller
             }
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+
 
         if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);
@@ -56,7 +54,7 @@ class ReviewController extends Controller
             'server_id' => 'required|exists:servers,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
-            'status' => 'nullable|in:pending,approved,rejected',
+
         ]);
 
         $server = Server::find($request->server_id);
@@ -71,7 +69,7 @@ class ReviewController extends Controller
             'server_id' => $server->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'status' => $request->status ?? 'pending',
+
         ]);
 
         $server->increment('total_reviews');

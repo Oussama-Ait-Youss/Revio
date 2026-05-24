@@ -20,7 +20,7 @@ return new class extends Migration
 
     $table->string('password');
 
-    $table->enum('role', ['ADMIN', 'SERVER']);
+    $table->foreignId('role_id')->constrained()->cascadeOnUpdate();
 
     $table->boolean('is_active')->default(true);
 

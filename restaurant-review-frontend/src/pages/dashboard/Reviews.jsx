@@ -5,12 +5,7 @@ import { Search, ChevronLeft, ChevronRight, FileSearch } from "lucide-react";
 const token = () => localStorage.getItem("token");
 const headers = () => ({ Authorization: `Bearer ${token()}` });
 const ratings = [5, 4, 3, 2, 1];
-const statuses = [
-    { value: "", label: "Any" },
-    { value: "pending", label: "Pending" },
-    { value: "approved", label: "Approved" },
-    { value: "rejected", label: "Rejected" },
-];
+
 
 function Reviews() {
     const [reviews, setReviews] = useState([]);
@@ -20,7 +15,7 @@ function Reviews() {
     const [query, setQuery] = useState("");
     const [serverId, setServerId] = useState("");
     const [rating, setRating] = useState("");
-    const [status, setStatus] = useState("");
+
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [page, setPage] = useState(1);
@@ -47,7 +42,7 @@ function Reviews() {
             const params = new URLSearchParams();
             if (serverId) params.append("server_id", serverId);
             if (rating) params.append("rating", rating);
-            if (status) params.append("status", status);
+
             if (startDate) params.append("start_date", startDate);
             if (endDate) params.append("end_date", endDate);
 
@@ -85,7 +80,7 @@ function Reviews() {
         setQuery("");
         setServerId("");
         setRating("");
-        setStatus("");
+
         setStartDate("");
         setEndDate("");
         setPage(1);
@@ -98,7 +93,7 @@ function Reviews() {
                 <div>
                     <h1 style={{ margin: 0, fontSize: "2rem", color: "#111" }}>Review filtering</h1>
                     <p style={{ margin: "0.75rem 0 0", color: "#666", maxWidth: "600px" }}>
-                        Search reviews by server, date, rating, and status. Use the filters to refine results for faster review management.
+                        Search reviews by server, date, and rating. Use the filters to refine results for faster review management.
                     </p>
                 </div>
             </div>
@@ -128,7 +123,7 @@ function Reviews() {
                         <select value={serverId} onChange={e => setServerId(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }}>
                             <option value="">All servers</option>
                             {servers.map(server => (
-                                <option key={server.id} value={server.id}>{server.user?.full_name || server.user?.email || `Server ${server.id}`}</option>
+                                <option key={server.server?.id} value={server.server?.id}>{server.full_name || server.email}</option>
                             ))}
                         </select>
                     </div>
@@ -141,14 +136,7 @@ function Reviews() {
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>Status</label>
-                        <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }}>
-                            {statuses.map(option => (
-                                <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                        </select>
-                    </div>
+
                     <div>
                         <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>From</label>
                         <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }} />
@@ -183,7 +171,7 @@ function Reviews() {
                             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "820px" }}>
                                 <thead>
                                     <tr>
-                                        {['ID', 'Server', 'Rating', 'Status', 'Comment', 'Date'].map(header => (
+                                        {['ID', 'Server', 'Rating', 'Comment', 'Date'].map(header => (
                                             <th key={header} style={{ textAlign: "left", padding: "14px 16px", color: "#666", fontSize: "0.9rem", borderBottom: "1px solid #eee" }}>{header}</th>
                                         ))}
                                     </tr>
@@ -194,7 +182,7 @@ function Reviews() {
                                             <td style={{ padding: "14px 16px", color: "#333" }}>{review.id}</td>
                                             <td style={{ padding: "14px 16px", color: "#333" }}>{review.server?.user?.full_name || "Unknown"}</td>
                                             <td style={{ padding: "14px 16px", color: "#333" }}>{review.rating}/5</td>
-                                            <td style={{ padding: "14px 16px", color: "#333", textTransform: "capitalize" }}>{review.status || "pending"}</td>
+
                                             <td style={{ padding: "14px 16px", color: "#4f4f4f", maxWidth: "420px" }}>{review.comment || "No comment"}</td>
                                             <td style={{ padding: "14px 16px", color: "#777" }}>{review.created_at ? new Date(review.created_at).toLocaleDateString() : "—"}</td>
                                         </tr>

@@ -8,6 +8,7 @@ import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ServerDashboard from "../pages/dashboard/ServerDashboard";
 import Servers from "../pages/dashboard/Servers";
 import Reviews from "../pages/dashboard/Reviews";
+import NfcCards from "../pages/dashboard/NfcCards";
 import ClientReview from "../pages/public/ClientReview";
 
 function DashboardEntry() {
@@ -51,6 +52,15 @@ function AppRoutes() {
                             <AdminOnly>
                                 <DashboardLayout>
                                     <Reviews />
+                                </DashboardLayout>
+                            </AdminOnly>
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/nfc-cards" element={
+                        <ProtectedRoute>
+                            <AdminOnly>
+                                <DashboardLayout>
+                                    <NfcCards />
                                 </DashboardLayout>
                             </AdminOnly>
                         </ProtectedRoute>
