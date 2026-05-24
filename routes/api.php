@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/servers', [ServerController::class, 'store']);
         Route::put('/servers/{id}', [ServerController::class, 'update']);
         Route::delete('/servers/{id}', [ServerController::class, 'destroy']);
+        Route::get('/reviews', [ReviewController::class, 'index']);
     });
 
     Route::get('/my-reviews', [ServerController::class, 'myReviews']);

@@ -10,6 +10,7 @@ class Review extends Model
         'rating',
         'comment',
         'server_id',
+        'status',
     ];
 
     /**

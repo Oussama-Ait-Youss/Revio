@@ -7,10 +7,8 @@ import Login from "../pages/auth/Login";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import ServerDashboard from "../pages/dashboard/ServerDashboard";
 import Servers from "../pages/dashboard/Servers";
+import Reviews from "../pages/dashboard/Reviews";
 import ClientReview from "../pages/public/ClientReview";
-
-
-<Route path="/review/:token" element={<ClientReview />} />
 
 function DashboardEntry() {
     const { user } = useAuth();
@@ -31,6 +29,7 @@ function AppRoutes() {
             <AuthProvider>
                 <Routes>
                     <Route path="/" element={<Login />} />
+                    <Route path="/review/:token" element={<ClientReview />} />
                     <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <DashboardLayout>
@@ -43,6 +42,15 @@ function AppRoutes() {
                             <AdminOnly>
                                 <DashboardLayout>
                                     <Servers />
+                                </DashboardLayout>
+                            </AdminOnly>
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/reviews" element={
+                        <ProtectedRoute>
+                            <AdminOnly>
+                                <DashboardLayout>
+                                    <Reviews />
                                 </DashboardLayout>
                             </AdminOnly>
                         </ProtectedRoute>
