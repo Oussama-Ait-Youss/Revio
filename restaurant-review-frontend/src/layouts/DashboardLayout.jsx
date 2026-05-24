@@ -3,12 +3,13 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axiosClient from "../api/axios";
 import {
-    LayoutDashboard, Users, CreditCard, Star, LogOut, Menu, X
+    LayoutDashboard, Users, CreditCard, Star, LogOut, Menu, X, FileSearch
 } from "lucide-react";
 
 const adminNav = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { label: "Servers", icon: Users, path: "/dashboard/servers" },
+    { label: "Reviews", icon: FileSearch, path: "/dashboard/reviews" },
 ];
 
 const serverNav = [
