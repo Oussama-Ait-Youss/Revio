@@ -13,7 +13,9 @@ class ServerController extends Controller
         $serverRole = \App\Models\Role::where('name', \App\Models\Role::SERVER)->first();
         
         $servers = \App\Models\User::where('role_id', $serverRole->id)
-            ->with('server.nfcCard')
+            ->with(['server' => function ($query) {
+                $query->withCount('reviews')->with('nfcCard');
+            }])
             ->get();
 
         $nfcCards = \App\Models\NfcCard::all();
@@ -149,7 +151,9 @@ class ServerController extends Controller
     public function show($id)
     {
         return response()->json(
-            \App\Models\User::with('server.nfcCard')->findOrFail($id)
+            \App\Models\User::with(['server' => function ($query) {
+                $query->withCount('reviews')->with('nfcCard');
+            }])->findOrFail($id)
         );
     }
     // get my reviews
@@ -157,7 +161,10 @@ class ServerController extends Controller
     {
         $user = $request->user();
     
-        $server = Server::where('user_id', $user->id)->first();
+        $server = Server::where('user_id', $user->id)
+            ->with('user')
+            ->withCount('reviews')
+            ->first();
     
         if (!$server) {
             return response()->json([
