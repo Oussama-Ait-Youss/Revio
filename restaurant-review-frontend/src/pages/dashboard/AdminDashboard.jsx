@@ -1,55 +1,28 @@
-import { useState, useEffect } from "react";
-import { Users, Star, CreditCard, Activity } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Activity, CreditCard, Sparkles, Star, Users } from "lucide-react";
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+    Bar,
+    BarChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from "recharts";
 import axiosClient from "../../api/axios";
 
 const token = () => localStorage.getItem("token");
 const headers = () => ({ Authorization: `Bearer ${token()}` });
 
-function StatCard({ title, value, icon: Icon, color }) {
+function StatCard({ title, value, icon: Icon }) {
     return (
-        <div style={{
-            background: "#fff",
-            borderRadius: "16px",
-            padding: "1.5rem",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            border: "1px solid #f0f0f0",
-            transition: "transform 0.2s, box-shadow 0.2s",
-            cursor: "default"
-        }}
-        onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-4px)";
-            e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.08)";
-        }}
-        onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.03)";
-        }}
-        >
+        <div className="stat-card">
             <div>
-                <p style={{ color: "#888", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px 0" }}>
-                    {title}
-                </p>
-                <h3 style={{ fontSize: "2rem", fontWeight: 700, margin: 0, color: "#0f0f0f" }}>
-                    {value}
-                </h3>
+                <span>{title}</span>
+                <strong>{value ?? 0}</strong>
             </div>
-            <div style={{
-                width: "56px",
-                height: "56px",
-                borderRadius: "14px",
-                background: color + "15", // adding some transparency
-                color: color,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-            }}>
-                <Icon size={28} />
+            <div className="icon-tile">
+                <Icon size={24} />
             </div>
         </div>
     );
@@ -58,7 +31,7 @@ function StatCard({ title, value, icon: Icon, color }) {
 function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -66,7 +39,6 @@ function AdminDashboard() {
                 const response = await axiosClient.get("/dashboard/stats", { headers: headers() });
                 setStats(response.data);
             } catch (err) {
-                console.error(err);
                 setError("Failed to load dashboard statistics.");
             } finally {
                 setLoading(false);
@@ -76,119 +48,97 @@ function AdminDashboard() {
     }, []);
 
     if (loading) {
-        return (
-            <div style={{ padding: "3rem", textAlign: "center", color: "#888", fontSize: "1.1rem" }}>
-                Loading dashboard statistics...
-            </div>
-        );
+        return <div className="page"><div className="loading-state">Loading dashboard...</div></div>;
     }
 
     if (error) {
-        return (
-            <div style={{ padding: "3rem", textAlign: "center", color: "#c0392b", fontSize: "1.1rem" }}>
-                {error}
-            </div>
-        );
+        return <div className="page"><div className="error-state">{error}</div></div>;
     }
 
     return (
-        <div style={{ padding: "2rem", boxSizing: "border-box" }}>
-            <div style={{ marginBottom: "2rem" }}>
-                <h1 style={{ fontSize: "1.8rem", fontWeight: 700, margin: 0, color: "#0f0f0f" }}>
-                    Dashboard Overview
-                </h1>
-                <p style={{ color: "#888", marginTop: "0.5rem", fontSize: "14px" }}>
-                    Real-time statistics and analytics for your restaurant.
-                </p>
-            </div>
+        <div className="page">
+            <header className="page-header">
+                <div className="page-title">
+                    <h1>Dashboard</h1>
+                    <p>Quick view of team activity, cards, and review volume.</p>
+                </div>
+            </header>
 
-            {/* KPI Cards */}
-            <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
-                gap: "1.5rem",
-                marginBottom: "3rem" 
-            }}>
-                <StatCard 
-                    title="Total Servers" 
-                    value={stats.total_servers} 
-                    icon={Users} 
-                    color="#4F46E5" // Indigo
-                />
-                <StatCard 
-                    title="Total Reviews" 
-                    value={stats.total_reviews} 
-                    icon={Star} 
-                    color="#F59E0B" // Amber
-                />
-                <StatCard 
-                    title="Total NFC Cards" 
-                    value={stats.total_nfc_cards} 
-                    icon={CreditCard} 
-                    color="#10B981" // Emerald
-                />
-                <StatCard 
-                    title="Assigned Cards" 
-                    value={stats.assigned_nfc_cards} 
-                    icon={Activity} 
-                    color="#EC4899" // Pink
-                />
-            </div>
+            <section className="dashboard-hero">
+                <div className="hero-panel">
+                    <span className="hero-eyebrow">
+                        <Sparkles size={15} /> Live restaurant pulse
+                    </span>
+                    <h2>Turn every table into sharper service insight.</h2>
+                    <p>
+                        Watch feedback volume, server coverage, and NFC assignment health from a single operational view.
+                    </p>
+                </div>
+                <div className="hero-side">
+                    <div className="signal-card">
+                        <span>Review coverage</span>
+                        <strong>{stats.total_servers ? Math.round((stats.total_reviews / Math.max(stats.total_servers, 1)) * 10) / 10 : 0}</strong>
+                        <span>reviews per server</span>
+                    </div>
+                    <div className="signal-card">
+                        <span>Card readiness</span>
+                        <strong>{stats.total_nfc_cards ? Math.round((stats.assigned_nfc_cards / stats.total_nfc_cards) * 100) : 0}%</strong>
+                        <span>assigned NFC cards</span>
+                    </div>
+                </div>
+            </section>
 
-            {/* Charts Section */}
-            <div style={{
-                background: "#fff",
-                borderRadius: "16px",
-                padding: "2rem",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-                border: "1px solid #f0f0f0",
-            }}>
-                <h2 style={{ fontSize: "1.2rem", fontWeight: 600, color: "#0f0f0f", margin: "0 0 2rem 0" }}>
-                    Reviews by Server
-                </h2>
-                
-                {stats.reviews_per_server && stats.reviews_per_server.length > 0 ? (
-                    <div style={{ height: "400px", width: "100%" }}>
+            <section className="stats-grid">
+                <StatCard title="Servers" value={stats.total_servers} icon={Users} />
+                <StatCard title="Reviews" value={stats.total_reviews} icon={Star} />
+                <StatCard title="NFC cards" value={stats.total_nfc_cards} icon={CreditCard} />
+                <StatCard title="Assigned cards" value={stats.assigned_nfc_cards} icon={Activity} />
+            </section>
+
+            <section className="panel">
+                <div className="panel-header">
+                    <div>
+                        <h2>Reviews by server</h2>
+                        <p className="panel-subtitle">Compare feedback volume across your floor team.</p>
+                    </div>
+                </div>
+
+                {stats.reviews_per_server?.length > 0 ? (
+                    <div style={{ height: 390, padding: "18px" }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                data={stats.reviews_per_server}
-                                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                                <XAxis 
-                                    dataKey="name" 
+                            <BarChart data={stats.reviews_per_server} margin={{ top: 10, right: 18, left: 0, bottom: 52 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e8edf4" />
+                                <XAxis
+                                    dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#888', fontSize: 12 }}
-                                    angle={-45}
+                                    tick={{ fill: "#64748b", fontSize: 12 }}
+                                    angle={-35}
                                     textAnchor="end"
-                                    dy={10}
+                                    dy={12}
                                 />
-                                <YAxis 
+                                <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#888', fontSize: 12 }}
+                                    tick={{ fill: "#64748b", fontSize: 12 }}
                                     allowDecimals={false}
                                 />
-                                <Tooltip 
-                                    cursor={{ fill: '#f9f9f9' }}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+                                <Tooltip
+                                    cursor={{ fill: "#f8fafc" }}
+                                    contentStyle={{
+                                        borderRadius: 8,
+                                        border: "1px solid #dbe3ee",
+                                        boxShadow: "0 12px 30px rgba(35,48,70,0.12)",
+                                    }}
                                 />
-                                <Bar 
-                                    dataKey="reviews" 
-                                    fill="#0f0f0f" 
-                                    radius={[6, 6, 0, 0]}
-                                    animationDuration={1500}
-                                />
+                                <Bar dataKey="reviews" fill="#0f766e" radius={[6, 6, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 ) : (
-                    <div style={{ padding: "4rem 0", textAlign: "center", color: "#aaa" }}>
-                        Not enough data to display the chart.
-                    </div>
+                    <div className="empty-state">Not enough data to display this chart.</div>
                 )}
-            </div>
+            </section>
         </div>
     );
 }

@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Filter, RotateCcw, Search, Star } from "lucide-react";
 import axiosClient from "../../api/axios";
-import { Search, ChevronLeft, ChevronRight, FileSearch } from "lucide-react";
 
 const token = () => localStorage.getItem("token");
 const headers = () => ({ Authorization: `Bearer ${token()}` });
 const ratings = [5, 4, 3, 2, 1];
-
 
 function Reviews() {
     const [reviews, setReviews] = useState([]);
@@ -15,16 +14,10 @@ function Reviews() {
     const [query, setQuery] = useState("");
     const [serverId, setServerId] = useState("");
     const [rating, setRating] = useState("");
-
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [page, setPage] = useState(1);
     const perPage = 8;
-
-    useEffect(() => {
-        fetchServers();
-        fetchReviews();
-    }, []);
 
     const fetchServers = async () => {
         try {
@@ -35,16 +28,22 @@ function Reviews() {
         }
     };
 
-    const fetchReviews = async () => {
+    const fetchReviews = async (overrides = {}) => {
         setLoading(true);
         setError("");
         try {
+            const activeFilters = {
+                serverId,
+                rating,
+                startDate,
+                endDate,
+                ...overrides,
+            };
             const params = new URLSearchParams();
-            if (serverId) params.append("server_id", serverId);
-            if (rating) params.append("rating", rating);
-
-            if (startDate) params.append("start_date", startDate);
-            if (endDate) params.append("end_date", endDate);
+            if (activeFilters.serverId) params.append("server_id", activeFilters.serverId);
+            if (activeFilters.rating) params.append("rating", activeFilters.rating);
+            if (activeFilters.startDate) params.append("start_date", activeFilters.startDate);
+            if (activeFilters.endDate) params.append("end_date", activeFilters.endDate);
 
             const queryString = params.toString();
             const response = await axiosClient.get(`/reviews${queryString ? `?${queryString}` : ""}`, {
@@ -59,17 +58,18 @@ function Reviews() {
         }
     };
 
+    useEffect(() => {
+        fetchServers();
+        fetchReviews();
+    }, []);
+
     const filteredReviews = useMemo(() => {
         const term = query.trim().toLowerCase();
-        return reviews.filter(review => {
+        return reviews.filter((review) => {
             if (!term) return true;
             const serverName = review.server?.user?.full_name || review.server?.user?.name || "";
             const comment = review.comment || "";
-            return (
-                comment.toLowerCase().includes(term) ||
-                serverName.toLowerCase().includes(term) ||
-                String(review.id).includes(term)
-            );
+            return comment.toLowerCase().includes(term) || serverName.toLowerCase().includes(term) || String(review.id).includes(term);
         });
     }, [reviews, query]);
 
@@ -80,142 +80,126 @@ function Reviews() {
         setQuery("");
         setServerId("");
         setRating("");
-
         setStartDate("");
         setEndDate("");
         setPage(1);
-        fetchReviews();
+        fetchReviews({ serverId: "", rating: "", startDate: "", endDate: "" });
     };
 
     return (
-        <div style={{ padding: "2rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: "2rem", color: "#111" }}>Review filtering</h1>
-                    <p style={{ margin: "0.75rem 0 0", color: "#666", maxWidth: "600px" }}>
-                        Search reviews by server, date, and rating. Use the filters to refine results for faster review management.
-                    </p>
+        <div className="page">
+            <header className="page-header">
+                <div className="page-title">
+                    <h1>Reviews</h1>
+                    <p>Filter guest feedback by server, date, rating, or keyword.</p>
                 </div>
-            </div>
+            </header>
 
-            <div style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
-                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                    <div style={{ flex: "1 1 320px", position: "relative" }}>
-                        <Search size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#777" }} />
-                        <input
-                            value={query}
-                            onChange={e => setQuery(e.target.value)}
-                            placeholder="Search reviews or server name..."
-                            style={{ width: "100%", padding: "14px 14px 14px 40px", borderRadius: "14px", border: "1px solid #ddd", fontSize: "0.95rem" }}
-                        />
+            <section className="panel padded" style={{ marginBottom: 16 }}>
+                <div className="toolbar">
+                    <div className="search-field">
+                        <Search size={18} />
+                        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search reviews, servers, or IDs" />
                     </div>
-                    <button onClick={fetchReviews} style={{ padding: "0 22px", minWidth: "140px", borderRadius: "14px", border: "none", background: "#c9a96e", color: "#fff", cursor: "pointer" }}>
-                        Apply filters
-                    </button>
-                    <button onClick={clearFilters} style={{ padding: "0 22px", minWidth: "140px", borderRadius: "14px", border: "1px solid #ccc", background: "#fff", color: "#333", cursor: "pointer" }}>
-                        Clear filters
-                    </button>
+                    <div className="actions">
+                        <button className="button" type="button" onClick={fetchReviews}>
+                            <Filter size={17} /> Apply
+                        </button>
+                        <button className="button secondary" type="button" onClick={clearFilters}>
+                            <RotateCcw size={17} /> Reset
+                        </button>
+                    </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>Server</label>
-                        <select value={serverId} onChange={e => setServerId(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }}>
+                <div className="filters-grid">
+                    <div className="field">
+                        <label>Server</label>
+                        <select className="select" value={serverId} onChange={(e) => setServerId(e.target.value)}>
                             <option value="">All servers</option>
-                            {servers.map(server => (
-                                <option key={server.server?.id} value={server.server?.id}>{server.full_name || server.email}</option>
+                            {servers.map((server) => (
+                                <option key={server.server?.id || server.id} value={server.server?.id}>
+                                    {server.full_name || server.email}
+                                </option>
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>Rating</label>
-                        <select value={rating} onChange={e => setRating(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }}>
+                    <div className="field">
+                        <label>Rating</label>
+                        <select className="select" value={rating} onChange={(e) => setRating(e.target.value)}>
                             <option value="">Any rating</option>
-                            {ratings.map(value => (
+                            {ratings.map((value) => (
                                 <option key={value} value={value}>{value} star{value > 1 ? "s" : ""}</option>
                             ))}
                         </select>
                     </div>
-
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>From</label>
-                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }} />
+                    <div className="field">
+                        <label>From</label>
+                        <input className="input" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                     </div>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>To</label>
-                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ width: "100%", borderRadius: "14px", border: "1px solid #ddd", padding: "12px" }} />
+                    <div className="field">
+                        <label>To</label>
+                        <input className="input" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div style={{ background: "#fff", borderRadius: "22px", padding: "1.5rem", boxShadow: "0 18px 45px rgba(15,15,15,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", gap: "1rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <FileSearch size={20} color="#c9a96e" />
-                        <div>
-                            <h2 style={{ margin: 0, fontSize: "1.2rem", color: "#111" }}>Filtered reviews</h2>
-                            <p style={{ margin: "4px 0 0", color: "#777", fontSize: "0.95rem" }}>{filteredReviews.length} review{filteredReviews.length === 1 ? "" : "s"} matched</p>
-                        </div>
+            <section className="panel">
+                <div className="panel-header">
+                    <div>
+                        <h2>Matched reviews</h2>
+                        <p className="panel-subtitle">{filteredReviews.length} review{filteredReviews.length === 1 ? "" : "s"} found</p>
                     </div>
                 </div>
 
                 {loading ? (
-                    <p style={{ color: "#888" }}>Loading reviews...</p>
+                    <div className="loading-state">Loading reviews...</div>
                 ) : error ? (
-                    <p style={{ color: "#c0392b" }}>{error}</p>
+                    <div className="error-state">{error}</div>
                 ) : filteredReviews.length === 0 ? (
-                    <p style={{ color: "#888" }}>No reviews matched your filters.</p>
+                    <div className="empty-state">No reviews matched your filters.</div>
                 ) : (
                     <>
-                        <div style={{ overflowX: "auto" }}>
-                            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "820px" }}>
+                        <div className="table-wrap">
+                            <table className="data-table">
                                 <thead>
                                     <tr>
-                                        {['ID', 'Server', 'Rating', 'Comment', 'Date'].map(header => (
-                                            <th key={header} style={{ textAlign: "left", padding: "14px 16px", color: "#666", fontSize: "0.9rem", borderBottom: "1px solid #eee" }}>{header}</th>
-                                        ))}
+                                        {["ID", "Server", "Rating", "Comment", "Date"].map((header) => <th key={header}>{header}</th>)}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentPageReviews.map(review => (
-                                        <tr key={review.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                                            <td style={{ padding: "14px 16px", color: "#333" }}>{review.id}</td>
-                                            <td style={{ padding: "14px 16px", color: "#333" }}>{review.server?.user?.full_name || "Unknown"}</td>
-                                            <td style={{ padding: "14px 16px", color: "#333" }}>{review.rating}/5</td>
-
-                                            <td style={{ padding: "14px 16px", color: "#4f4f4f", maxWidth: "420px" }}>{review.comment || "No comment"}</td>
-                                            <td style={{ padding: "14px 16px", color: "#777" }}>{review.created_at ? new Date(review.created_at).toLocaleDateString() : "—"}</td>
+                                    {currentPageReviews.map((review) => (
+                                        <tr key={review.id}>
+                                            <td>#{review.id}</td>
+                                            <td>{review.server?.user?.full_name || "Unknown"}</td>
+                                            <td>
+                                                <span className={`rating-pill ${review.rating >= 4 ? "good" : review.rating >= 3 ? "neutral" : "bad"}`}>
+                                                    <Star size={14} fill="currentColor" />
+                                                    {review.rating}/5
+                                                </span>
+                                            </td>
+                                            <td>{review.comment || "No comment"}</td>
+                                            <td>{review.created_at ? new Date(review.created_at).toLocaleDateString() : "-"}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
 
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginTop: "1.25rem" }}>
-                            <p style={{ margin: 0, color: "#555" }}>
-                                Showing {currentPageReviews.length} of {filteredReviews.length} reviews
-                            </p>
-                            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                                <button
-                                    onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                                    disabled={page === 1}
-                                    style={{ width: "42px", height: "42px", borderRadius: "12px", border: "1px solid #ddd", background: "#fff", cursor: page === 1 ? "not-allowed" : "pointer", display: "grid", placeItems: "center" }}
-                                >
+                        <div className="pagination">
+                            <span className="muted">Showing {currentPageReviews.length} of {filteredReviews.length}</span>
+                            <div className="actions">
+                                <button className="icon-action" type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1} aria-label="Previous page" title="Previous page">
                                     <ChevronLeft size={18} />
                                 </button>
-                                <span style={{ color: "#333" }}>{page} / {pageCount}</span>
-                                <button
-                                    onClick={() => setPage(prev => Math.min(pageCount, prev + 1))}
-                                    disabled={page === pageCount}
-                                    style={{ width: "42px", height: "42px", borderRadius: "12px", border: "1px solid #ddd", background: "#fff", cursor: page === pageCount ? "not-allowed" : "pointer", display: "grid", placeItems: "center" }}
-                                >
+                                <span className="muted">{page} / {pageCount}</span>
+                                <button className="icon-action" type="button" onClick={() => setPage((prev) => Math.min(pageCount, prev + 1))} disabled={page === pageCount} aria-label="Next page" title="Next page">
                                     <ChevronRight size={18} />
                                 </button>
                             </div>
                         </div>
                     </>
                 )}
-            </div>
+            </section>
         </div>
     );
 }
