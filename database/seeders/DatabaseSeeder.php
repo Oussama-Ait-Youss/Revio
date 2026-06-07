@@ -7,6 +7,7 @@ use App\Models\Restaurant;
 use App\Models\Server;
 use App\Models\NfcCard;
 use App\Models\Review;
+use App\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -40,6 +41,10 @@ class DatabaseSeeder extends Seeder
             'status' => 'ACTIVE'
         ]);
 
+        $superAdminRole = Role::firstOrCreate(['name' => Role::ADMIN]);
+        $managerRole = Role::firstOrCreate(['name' => Role::MANAGER]);
+        $serverRole = Role::firstOrCreate(['name' => Role::SERVER]);
+
         /*
         |--------------------------------------------------------------------------
         | 2. Create the App Owner (SUPER_ADMIN)
@@ -50,7 +55,7 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Revio Owner',
             'email' => 'owner@revio.me',
             'password' => bcrypt('password123'),
-            'role' => 'SUPER_ADMIN',
+            'role_id' => $superAdminRole->id,
             'restaurant_id' => null,
             'is_active' => true,
         ]);
@@ -65,7 +70,7 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Manager Marrakchi',
             'email' => 'manager1@example.com',
             'password' => bcrypt('password123'),
-            'role' => 'MANAGER',
+            'role_id' => $managerRole->id,
             'restaurant_id' => $restaurant1->id,
             'is_active' => true,
         ]);
@@ -74,7 +79,7 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Manager Trattoria',
             'email' => 'manager2@example.com',
             'password' => bcrypt('password123'),
-            'role' => 'MANAGER',
+            'role_id' => $managerRole->id,
             'restaurant_id' => $restaurant2->id,
             'is_active' => true,
         ]);
@@ -94,7 +99,7 @@ class DatabaseSeeder extends Seeder
                 'full_name' => "Server User {$i}",
                 'email' => "server{$i}@example.com",
                 'password' => bcrypt('password123'),
-                'role' => 'SERVER',
+                'role_id' => $serverRole->id,
                 'restaurant_id' => $currentRestaurant->id,
                 'is_active' => true,
             ]);
@@ -123,8 +128,6 @@ class DatabaseSeeder extends Seeder
                     'server_id' => $server->id,
                     'rating' => rand(4, 5),
                     'comment' => "Great service by server {$i} at {$currentRestaurant->name}!",
-                    'customer_name' => "Client " . Str::random(4),
-                    'status' => 'PUBLISHED'
                 ]);
             }
         }

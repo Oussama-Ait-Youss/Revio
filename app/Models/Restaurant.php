@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -34,7 +35,9 @@ class Restaurant extends Model
      */
     public function manager(): HasOne
     {
-        return $this->hasOne(User::class)->where('role', 'MANAGER');
+        return $this->hasOne(User::class)->whereHas('role', function ($query) {
+            $query->where('name', Role::MANAGER);
+        });
     }
 
     /**
