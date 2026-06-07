@@ -11,7 +11,7 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->user() || $request->user()->role !== 'ADMIN') {
+        if (!$request->user() || !$request->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Forbidden. Admin access only.'
             ], 403);

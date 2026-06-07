@@ -19,7 +19,7 @@ return new class extends Migration
           ->constrained()
           ->cascadeOnDelete();
 
-    $table->string('phone');
+    $table->string('phone')->nullable();
 
     $table->integer('total_reviews')->default(0);
 

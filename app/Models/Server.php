@@ -28,4 +28,11 @@ class Server extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function getTotalReviewsAttribute()
+    {
+        return isset($this->attributes['reviews_count']) 
+            ? (int) $this->attributes['reviews_count'] 
+            : $this->reviews()->count();
+    }
 }

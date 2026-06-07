@@ -42,10 +42,11 @@ function Input({ label, ...props }) {
     );
 }
 
-const emptyForm = { full_name: "", email: "", password: "", phone: "" };
+const emptyForm = { full_name: "", email: "", password: "", phone: "", nfc_card_id: "" };
 
 function Servers() {
     const [servers, setServers] = useState([]);
+    const [availableCards, setAvailableCards] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [showAdd, setShowAdd] = useState(false);
@@ -60,6 +61,9 @@ function Servers() {
         try {
             const res = await axiosClient.get("/servers", { headers: headers() });
             setServers(res.data.data || res.data);
+            if (res.data.nfc_cards) {
+                setAvailableCards(res.data.nfc_cards);
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -123,6 +127,7 @@ function Servers() {
             email: server.email || "",
             password: "",
             phone: server.server?.phone || "",
+            nfc_card_id: server.server?.nfc_card?.id || "",
         });
         setError("");
         setShowEdit(true);
@@ -174,7 +179,7 @@ function Servers() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
                     <thead>
                         <tr style={{ background: "#fafaf8", borderBottom: "1px solid #eee" }}>
-                            {["Name", "Email", "Phone", "Total Reviews", "Status", "Actions"].map(h => (
+                            {["Name", "Email", "Phone", "NFC Card", "Total Reviews", "Status", "Actions"].map(h => (
                                 <th key={h} style={{
                                     padding: "12px 16px", textAlign: "left",
                                     fontSize: "12px", color: "#888", fontWeight: 500,
@@ -221,6 +226,13 @@ function Servers() {
                                 </td>
                                 <td style={{ padding: "14px 16px", color: "#555" }}>{server.email}</td>
                                 <td style={{ padding: "14px 16px", color: "#555" }}>{server.server?.phone || "—"}</td>
+                                <td style={{ padding: "14px 16px", color: "#555" }}>
+                                    {server.server?.nfc_card ? (
+                                        <span style={{ background: "#f0f0f0", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", fontFamily: "monospace" }}>
+                                            {server.server.nfc_card.uid}
+                                        </span>
+                                    ) : "—"}
+                                </td>
                                 <td style={{ padding: "14px 16px", color: "#555" }}>{server.server?.total_reviews ?? 0}</td>
                                 <td style={{ padding: "14px 16px" }}>
                                     <span style={{
@@ -263,6 +275,27 @@ function Servers() {
                         <Input label="Email" type="email" name="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
                         <Input label="Password" type="password" name="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
                         <Input label="Phone" name="phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                        <div style={{ marginBottom: "1rem" }}>
+                            <label style={{ display: "block", fontSize: "12px", color: "#555", marginBottom: "6px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                                Assign NFC Card
+                            </label>
+                            <select
+                                value={form.nfc_card_id}
+                                onChange={e => setForm({ ...form, nfc_card_id: e.target.value })}
+                                style={{
+                                    width: "100%", padding: "10px 14px", border: "1px solid #ddd",
+                                    borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box",
+                                    fontFamily: "sans-serif", background: "#fff",
+                                }}
+                            >
+                                <option value="">-- No NFC Card --</option>
+                                {availableCards.map(card => (
+                                    <option key={card.id} value={card.id}>
+                                        {card.uid} {card.server_id ? '(Already Assigned)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         {error && <p style={{ color: "#c0392b", fontSize: "13px", marginBottom: "1rem" }}>{error}</p>}
                         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                             <button type="button" onClick={() => setShowAdd(false)} style={{
@@ -288,6 +321,31 @@ function Servers() {
                         <Input label="Email" type="email" name="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
                         <Input label="New Password (leave blank to keep)" type="password" name="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
                         <Input label="Phone" name="phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                        <div style={{ marginBottom: "1rem" }}>
+                            <label style={{ display: "block", fontSize: "12px", color: "#555", marginBottom: "6px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                                Assign NFC Card
+                            </label>
+                            <select
+                                value={form.nfc_card_id}
+                                onChange={e => setForm({ ...form, nfc_card_id: e.target.value })}
+                                style={{
+                                    width: "100%", padding: "10px 14px", border: "1px solid #ddd",
+                                    borderRadius: "8px", fontSize: "14px", outline: "none", boxSizing: "border-box",
+                                    fontFamily: "sans-serif", background: "#fff",
+                                }}
+                            >
+                                <option value="">-- No NFC Card --</option>
+                                {availableCards.map(card => {
+                                    const isCurrent = selected && selected.server?.nfc_card?.id === card.id;
+                                    const isAssigned = card.server_id !== null;
+                                    return (
+                                        <option key={card.id} value={card.id}>
+                                            {card.uid} {isCurrent ? '(Current)' : isAssigned ? '(Already Assigned)' : ''}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        </div>
                         {error && <p style={{ color: "#c0392b", fontSize: "13px", marginBottom: "1rem" }}>{error}</p>}
                         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                             <button type="button" onClick={() => setShowEdit(false)} style={{

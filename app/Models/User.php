@@ -13,11 +13,12 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory;
 
-    protected $fillable = ['full_name', 'email', 'password', 'role', 'is_active'];
+    protected $fillable = ['full_name', 'email', 'password', 'role_id', 'is_active'];
 
-    // Role Constants
-    const ROLE_ADMIN = 'ADMIN';
-    const ROLE_SERVER = 'SERVER';
+    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     public function server(): HasOne
     {
@@ -26,6 +27,6 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role && $this->role->name === Role::ADMIN;
     }
 }

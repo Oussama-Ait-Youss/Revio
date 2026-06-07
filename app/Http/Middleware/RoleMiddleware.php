@@ -23,7 +23,7 @@ class RoleMiddleware
         }
 
         // Check if user role exists in allowed roles
-        if (!in_array($user->role, $roles)) {
+        if (!$user->role || !in_array($user->role->name, $roles)) {
             return response()->json([
                 'message' => 'Access denied'
             ], 403);
