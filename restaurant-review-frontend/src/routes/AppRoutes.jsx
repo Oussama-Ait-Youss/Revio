@@ -1,70 +1,60 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import ProtectedRoute from "../guards/ProtectedRoute";
+import { ProtectedRoute, AdminRoute, ManagerRoute, ServerRoute } from "../guards/ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
+import ServerLayout from "../layouts/ServerLayout";
 
 import Login from "../pages/auth/Login";
-import AdminDashboard from "../pages/dashboard/AdminDashboard";
-import ServerDashboard from "../pages/dashboard/ServerDashboard";
-import Servers from "../pages/dashboard/Servers";
-import Reviews from "../pages/dashboard/Reviews";
-import NfcCards from "../pages/dashboard/NfcCards";
 import ClientReview from "../pages/public/ClientReview";
 
-function DashboardEntry() {
-    const { user } = useAuth();
-    if (!user) return <Navigate to="/" replace />;
-    return user.role === "ADMIN" ? <AdminDashboard /> : <ServerDashboard />;
-}
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import RestaurantList from "../pages/admin/RestaurantList";
+import NfcCards from "../pages/admin/NfcCards";
 
-function AdminOnly({ children }) {
-    const { user } = useAuth();
-    if (!user) return <Navigate to="/" replace />;
-    if (user.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
-    return children;
-}
+import ManagerDashboard from "../pages/manager/ManagerDashboard";
+import Servers from "../pages/manager/Servers";
+import Reviews from "../pages/manager/Reviews";
+
+import ServerDashboard from "../pages/server/ServerDashboard";
 
 function AppRoutes() {
     return (
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
+                    {/* Public Routes */}
                     <Route path="/" element={<Login />} />
                     <Route path="/review/:token" element={<ClientReview />} />
-                    <Route path="/dashboard" element={
-                        <ProtectedRoute>
-                            <DashboardLayout>
-                                <DashboardEntry />
-                            </DashboardLayout>
-                        </ProtectedRoute>
+
+                    {/* Admin Routes */}
+                    <Route path="/admin/dashboard" element={
+                        <ProtectedRoute><AdminRoute><DashboardLayout><AdminDashboard /></DashboardLayout></AdminRoute></ProtectedRoute>
                     } />
-                    <Route path="/dashboard/servers" element={
-                        <ProtectedRoute>
-                            <AdminOnly>
-                                <DashboardLayout>
-                                    <Servers />
-                                </DashboardLayout>
-                            </AdminOnly>
-                        </ProtectedRoute>
+                    <Route path="/admin/restaurants" element={
+                        <ProtectedRoute><AdminRoute><DashboardLayout><RestaurantList /></DashboardLayout></AdminRoute></ProtectedRoute>
                     } />
-                    <Route path="/dashboard/reviews" element={
-                        <ProtectedRoute>
-                            <AdminOnly>
-                                <DashboardLayout>
-                                    <Reviews />
-                                </DashboardLayout>
-                            </AdminOnly>
-                        </ProtectedRoute>
+                    <Route path="/admin/nfc-cards" element={
+                        <ProtectedRoute><AdminRoute><DashboardLayout><NfcCards /></DashboardLayout></AdminRoute></ProtectedRoute>
                     } />
-                    <Route path="/dashboard/nfc-cards" element={
-                        <ProtectedRoute>
-                            <AdminOnly>
-                                <DashboardLayout>
-                                    <NfcCards />
-                                </DashboardLayout>
-                            </AdminOnly>
-                        </ProtectedRoute>
+
+                    {/* Manager Routes */}
+                    <Route path="/manager/dashboard" element={
+                        <ProtectedRoute><ManagerRoute><DashboardLayout><ManagerDashboard /></DashboardLayout></ManagerRoute></ProtectedRoute>
                     } />
+                    <Route path="/manager/servers" element={
+                        <ProtectedRoute><ManagerRoute><DashboardLayout><Servers /></DashboardLayout></ManagerRoute></ProtectedRoute>
+                    } />
+                    <Route path="/manager/reviews" element={
+                        <ProtectedRoute><ManagerRoute><DashboardLayout><Reviews /></DashboardLayout></ManagerRoute></ProtectedRoute>
+                    } />
+
+                    {/* Server Routes */}
+                    <Route path="/server/dashboard" element={
+                        <ProtectedRoute><ServerRoute><ServerLayout><ServerDashboard /></ServerLayout></ServerRoute></ProtectedRoute>
+                    } />
+                    
+                    {/* Catch All - Redirect to login */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

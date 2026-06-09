@@ -21,6 +21,7 @@ return new class extends Migration
     $table->string('password');
 
     $table->foreignId('role_id')->constrained()->cascadeOnUpdate();
+    $table->foreignId('restaurant_id')->nullable()->constrained()->nullOnDelete();//add restaurant id to the users migration
 
     $table->boolean('is_active')->default(true);
 
