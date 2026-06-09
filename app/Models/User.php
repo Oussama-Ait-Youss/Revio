@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models;
 
 class User extends Authenticatable
 {
@@ -28,5 +29,9 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role && $this->role->name === Role::ADMIN;
+    }
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(Restaurant::class);
     }
 }
