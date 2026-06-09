@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NFCCard extends Model
 {
-    protected $fillable = ['uid', 'public_token', 'qr_code_url', 'is_active', 'server_id', 'assigned_at'];
+    protected $fillable = ['uid', 'restaurant_id', 'public_token', 'qr_code_url', 'is_active', 'server_id', 'assigned_at'];
 
 public function server(): BelongsTo
 {

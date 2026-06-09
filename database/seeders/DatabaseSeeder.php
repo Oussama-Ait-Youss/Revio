@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Role;
 use App\Models\Restaurant;
 use App\Models\Server;
 use App\Models\NfcCard;
@@ -22,109 +23,110 @@ class DatabaseSeeder extends Seeder
     {
         /*
         |--------------------------------------------------------------------------
-        | 1. Create Restaurants
+        | 1. Seed Roles Table First (Required by users foreign key constraint)
         |--------------------------------------------------------------------------
-        | We create two separate restaurants to properly test data isolation.
+        | ADMIN: Platform Owner
+        | MANAGER: Restaurant Owner
+        | SERVER: Employee
         */
-        $restaurant1 = Restaurant::create([
+        $adminRole   = Role::create(['name' => 'ADMIN']);
+        $managerRole = Role::create(['name' => 'MANAGER']);
+        $serverRole  = Role::create(['name' => 'SERVER']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Create the ADMIN User (Platform Owner)
+        |--------------------------------------------------------------------------
+        | restaurant_id must be null
+        */
+        User::create([
+            'full_name' => 'Platform Owner',
+            'email' => 'owner@revio.me',
+            'password' => bcrypt('password123'),
+            'role_id' => $adminRole->id, 
+            'restaurant_id' => null,          
+            'is_active' => true,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Create the Unconfigured Manager User
+        |--------------------------------------------------------------------------
+        | restaurant_id must be null to test onboarding wizard flow
+        */
+        User::create([
+            'full_name' => 'Unconfigured Manager',
+            'email' => 'unconfigured@manager.com',
+            'password' => bcrypt('password123'),
+            'role_id' => $managerRole->id, 
+            'restaurant_id' => null,          
+            'is_active' => true,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Create Active Restaurant and Assigned MANAGER Account
+        |--------------------------------------------------------------------------
+        */
+        $restaurant = Restaurant::create([
             'name' => 'Le Marrakchi',
             'address' => 'Jemaa el-Fnaa, Marrakech',
             'phone' => '0524400000',
             'status' => 'ACTIVE'
         ]);
 
-        $restaurant2 = Restaurant::create([
-            'name' => 'La Trattoria',
-            'address' => 'Gueliz, Marrakech',
-            'phone' => '0524432641',
-            'status' => 'ACTIVE'
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Create the App Owner (SUPER_ADMIN)
-        |--------------------------------------------------------------------------
-        | App Owners do not belong to any restaurant, so restaurant_id is null.
-        */
         User::create([
-            'full_name' => 'Revio Owner',
-            'email' => 'owner@revio.me',
+            'full_name' => 'Restaurant Manager',
+            'email' => 'manager@example.com',
             'password' => bcrypt('password123'),
-            'role' => 'SUPER_ADMIN',
-            'restaurant_id' => null,
+            'role_id' => $managerRole->id, 
+            'restaurant_id' => $restaurant->id,
             'is_active' => true,
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | 3. Create Restaurant Managers
+        | 5. Create 5 SERVERS under Le Marrakchi
         |--------------------------------------------------------------------------
-        | Each manager must be bound explicitly to their respective restaurant.
+        | Unique user_id and restaurant_id values, active nfc_cards,
+        | and simple customer reviews (id, rating, comment, server_id, restaurant_id, timestamps)
         */
-        User::create([
-            'full_name' => 'Manager Marrakchi',
-            'email' => 'manager1@example.com',
-            'password' => bcrypt('password123'),
-            'role' => 'MANAGER',
-            'restaurant_id' => $restaurant1->id,
-            'is_active' => true,
-        ]);
-
-        User::create([
-            'full_name' => 'Manager Trattoria',
-            'email' => 'manager2@example.com',
-            'password' => bcrypt('password123'),
-            'role' => 'MANAGER',
-            'restaurant_id' => $restaurant2->id,
-            'is_active' => true,
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 4. Create Servers, NFC Cards, and Reviews
-        |--------------------------------------------------------------------------
-        | We will generate 10 servers split across both restaurants.
-        */
-        for ($i = 1; $i <= 10; $i++) {
-            // Alternate between Restaurant 1 and Restaurant 2
-            $currentRestaurant = ($i % 2 === 0) ? $restaurant1 : $restaurant2;
-
-            // Create Server User account
+        for ($i = 1; $i <= 5; $i++) {
+            // Create Server User Account
             $user = User::create([
                 'full_name' => "Server User {$i}",
                 'email' => "server{$i}@example.com",
                 'password' => bcrypt('password123'),
-                'role' => 'SERVER',
-                'restaurant_id' => $currentRestaurant->id,
+                'role_id' => $serverRole->id, 
+                'restaurant_id' => $restaurant->id,
                 'is_active' => true,
             ]);
 
-            // Create Server Business Profile
+            // Create Server Profile
             $server = Server::create([
                 'user_id' => $user->id,
-                'restaurant_id' => $currentRestaurant->id,
+                'restaurant_id' => $restaurant->id,
                 'phone' => "061234567{$i}",
+                'total_reviews' => 3,
             ]);
 
-            // Create NFC card matching the updated schema constraint rules
+            // Create Active NFC Card
             NfcCard::create([
                 'uid' => "UID-" . strtoupper(Str::random(6)) . "-{$i}",
                 'public_token' => Str::random(32),
                 'is_active' => true,
-                'restaurant_id' => $currentRestaurant->id,
+                'restaurant_id' => $restaurant->id,
                 'server_id' => $server->id,
                 'assigned_at' => now(),
             ]);
 
-            // Create 5 reviews linked to that specific server and restaurant environment
-            for ($j = 1; $j <= 5; $j++) {
+            // Create 3 reviews per server
+            for ($j = 1; $j <= 3; $j++) {
                 Review::create([
-                    'restaurant_id' => $currentRestaurant->id,
-                    'server_id' => $server->id,
-                    'rating' => rand(4, 5),
-                    'comment' => "Great service by server {$i} at {$currentRestaurant->name}!",
-                    'customer_name' => "Client " . Str::random(4),
-                    'status' => 'PUBLISHED'
+                    'restaurant_id' => $restaurant->id,
+                    'server_id'     => $server->id,
+                    'rating'        => rand(4, 5),
+                    'comment'       => "Great service by Server {$i} at Le Marrakchi!",
                 ]);
             }
         }

@@ -31,8 +31,13 @@ function Login() {
             const { access_token, user } = response.data;
  
             login(user, access_token);
-            const destination = user.role === "ADMIN" ? "/dashboard" : "/dashboard/servers";
-            navigate(destination, { replace: true });
+            const getDestination = (role) => {
+                if (role === "ADMIN") return "/admin/dashboard";
+                if (role === "MANAGER") return "/manager/dashboard";
+                if (role === "SERVER") return "/server/dashboard";
+                return "/";
+            };
+            navigate(getDestination(user.role), { replace: true });
         } catch (error) {
             if (error.response?.status === 422) {
                 setError("Invalid email or password. Please try again.");
@@ -46,8 +51,13 @@ function Login() {
 
     useEffect(() => {
         if (!user) return;
-        const destination = user.role === "ADMIN" ? "/dashboard" : "/dashboard/servers";
-        navigate(destination, { replace: true });
+        const getDestination = (role) => {
+            if (role === "ADMIN") return "/admin/dashboard";
+            if (role === "MANAGER") return "/manager/dashboard";
+            if (role === "SERVER") return "/server/dashboard";
+            return "/";
+        };
+        navigate(getDestination(user.role), { replace: true });
     }, [user, navigate]);
  
     return (
