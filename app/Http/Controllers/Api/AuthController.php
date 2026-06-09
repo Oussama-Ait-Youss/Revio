@@ -46,6 +46,19 @@ class AuthController extends Controller
         ]);
     }
 
+    public function me(Request $request)
+    {
+        $user = $request->user();
+        return response()->json([
+            'id' => $user->id,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'role' => $user->role?->name,
+            'restaurant_id' => $user->restaurant_id,
+            'is_active' => $user->is_active,
+        ]);
+    }
+
     public function logout(Request $request)
     {
         // Revoke the current token

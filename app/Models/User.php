@@ -13,7 +13,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory;
 
-    protected $fillable = ['full_name', 'email', 'password', 'role_id', 'is_active'];
+    protected $fillable = ['full_name', 'email', 'password', 'role_id', 'is_active', 'restaurant_id'];
 
     public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
