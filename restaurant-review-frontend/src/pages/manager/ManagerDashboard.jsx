@@ -77,7 +77,7 @@ function ManagerDashboard() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
                 <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl p-6 max-w-md shadow-sm">
-                    <p className="text-red-650 dark:text-red-400 font-semibold mb-4 text-sm">{error}</p>
+                    <p className="text-red-600 dark:text-red-400 font-semibold mb-4 text-sm">{error}</p>
                     <button
                         onClick={() => fetchData()}
                         className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"
@@ -141,7 +141,7 @@ function ManagerDashboard() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {reviews.length === 0 ? (
-                        <div className="col-span-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-400 dark:text-slate-500 font-medium text-sm">
+                        <div className="col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-400 dark:text-slate-500 font-medium text-sm">
                             No review feedback collected yet for this restaurant.
                         </div>
                     ) : (
@@ -150,20 +150,20 @@ function ManagerDashboard() {
                             let ratingBadge = null;
                             if (review.rating === 5) {
                                 ratingBadge = (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250/20">
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/20">
                                         <Award size={10} className="shrink-0" />
                                         5-Star Top Review
                                     </span>
                                 );
                             } else if (review.rating === 4) {
                                 ratingBadge = (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border border-green-250/20">
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border border-green-200/20">
                                         High Rating
                                     </span>
                                 );
                             } else {
                                 ratingBadge = (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-250/20">
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-200/20">
                                         <AlertTriangle size={10} className="shrink-0" />
                                         Action Needed
                                     </span>
@@ -204,12 +204,12 @@ function ManagerDashboard() {
                                             ))}
                                         </div>
 
-                                        <p className="text-sm text-slate-655 dark:text-slate-350 leading-relaxed font-medium">
-                                            {review.comment || <span className="italic text-slate-450 dark:text-slate-500">No review comments provided by customer.</span>}
+                                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                                            {review.comment || <span className="italic text-slate-400 dark:text-slate-500">No review comments provided by customer.</span>}
                                         </p>
                                     </div>
 
-                                    <div className="text-[10px] font-semibold text-slate-400 tracking-wider pt-2 border-t border-slate-100 dark:border-slate-850">
+                                    <div className="text-[10px] font-semibold text-slate-400 tracking-wider pt-2 border-t border-slate-100 dark:border-slate-800">
                                         Submitted on {new Date(review.created_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>

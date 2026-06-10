@@ -56,7 +56,7 @@ function RestaurantSetup() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-red-650 dark:text-red-400 text-xs text-center">
+                    <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-red-600 dark:text-red-400 text-xs text-center">
                         {error}
                     </div>
                 )}
@@ -77,7 +77,7 @@ function RestaurantSetup() {
                                 placeholder="e.g. Le Marrakchi"
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full pl-9 pr-3 py-2.5 border border-slate-305 dark:border-slate-650 rounded-lg bg-transparent focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white text-sm"
+                                className="w-full pl-9 pr-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-transparent focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white text-sm"
                             />
                         </div>
                     </div>
@@ -97,7 +97,7 @@ function RestaurantSetup() {
                                 placeholder="e.g. Jemaa el-Fnaa, Marrakech"
                                 value={formData.address}
                                 onChange={handleChange}
-                                className="w-full pl-9 pr-3 py-2.5 border border-slate-305 dark:border-slate-650 rounded-lg bg-transparent focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white text-sm"
+                                className="w-full pl-9 pr-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-transparent focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white text-sm"
                             />
                         </div>
                     </div>
@@ -117,7 +117,7 @@ function RestaurantSetup() {
                                 placeholder="e.g. 0524400000"
                                 value={formData.phone}
                                 onChange={handleChange}
-                                className="w-full pl-9 pr-3 py-2.5 border border-slate-305 dark:border-slate-650 rounded-lg bg-transparent focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white text-sm"
+                                className="w-full pl-9 pr-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-transparent focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white text-sm"
                             />
                         </div>
                     </div>

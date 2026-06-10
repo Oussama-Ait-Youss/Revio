@@ -174,13 +174,13 @@ function ServerList() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-zinc-50 dark:bg-zinc-800/40 border-b border-zinc-200 dark:border-zinc-800">
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Server Info</th>
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Contact Details</th>
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">NFC Card Linked</th>
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">Reviews</th>
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">Avg Rating</th>
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Status</th>
-                                <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">Actions</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Server Info</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Contact Details</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">NFC Card Linked</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">Reviews</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">Avg Rating</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Status</th>
+                                <th className="px-6 py-[18px] text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -200,7 +200,7 @@ function ServerList() {
 
                                     return (
                                         <tr key={serverUser.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-all">
-                                            <td className="px-6 py-5.5">
+                                            <td className="px-6 py-[22px]">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center font-bold text-sm">
                                                         {serverUser.full_name.split(" ").map(n => n[0]).join("").toUpperCase()}
@@ -211,8 +211,8 @@ function ServerList() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5.5 text-sm">
-                                                <div className="space-y-0.5 text-zinc-655 dark:text-zinc-350">
+                                            <td className="px-6 py-[22px] text-sm">
+                                                <div className="space-y-0.5 text-zinc-600 dark:text-zinc-300">
                                                     <div className="flex items-center gap-1.5">
                                                         <Mail size={13} className="text-zinc-400" />
                                                         {serverUser.email}
@@ -225,9 +225,9 @@ function ServerList() {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5.5">
+                                            <td className="px-6 py-[22px]">
                                                 {serverUser.server?.nfc_card ? (
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-150 dark:border-green-900/30">
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-100 dark:border-green-900/30">
                                                         <CreditCard size={12} />
                                                         {serverUser.server.nfc_card.uid}
                                                     </span>
@@ -237,18 +237,18 @@ function ServerList() {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-5.5 text-center">
+                                            <td className="px-6 py-[22px] text-center">
                                                 <span className="font-bold text-zinc-900 dark:text-white text-sm">
                                                     {reviewsCount}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5.5 text-center">
+                                            <td className="px-6 py-[22px] text-center">
                                                 <span className="inline-flex items-center gap-1 text-sm font-bold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
                                                     <Star size={14} className="text-amber-500 fill-amber-500" />
                                                     {avgRating}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5.5">
+                                            <td className="px-6 py-[22px]">
                                                 <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border ${
                                                     serverUser.is_active
                                                         ? "bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30"
@@ -258,7 +258,7 @@ function ServerList() {
                                                     Active
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5.5 text-right">
+                                            <td className="px-6 py-[22px] text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => handleOpenEdit(serverUser)}

@@ -121,12 +121,12 @@ function ServerDashboard() {
                     </div>
 
                     {isCardConnected ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-150 dark:border-green-900/30">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-100 dark:border-green-900/30">
                             <CreditCard size={12} />
                             Connected
                         </span>
                     ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-xs font-bold rounded-full border border-red-150 dark:border-red-900/30">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-xs font-bold rounded-full border border-red-100 dark:border-red-900/30">
                             <CreditCard size={12} />
                             No Card Linked
                         </span>
@@ -134,7 +134,7 @@ function ServerDashboard() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl p-4 text-red-650 dark:text-red-400 text-sm">
+                    <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl p-4 text-red-600 dark:text-red-400 text-sm">
                         {error}
                     </div>
                 )}
