@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory;
 
-    protected $fillable = ['full_name', 'email', 'password', 'role_id', 'is_active', 'restaurant_id'];
+    protected $fillable = ['full_name', 'email', 'password', 'role_id', 'is_active'];
 
     public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
