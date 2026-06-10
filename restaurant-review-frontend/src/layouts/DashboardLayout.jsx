@@ -5,12 +5,15 @@ import {
     FileSearch,
     LayoutDashboard,
     LogOut,
+    Moon,
     PanelLeftClose,
     PanelLeftOpen,
+    Sun,
     UtensilsCrossed,
     Users,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import axiosClient from "../api/axios";
 
 const adminNav = [
@@ -27,18 +30,21 @@ const managerNav = [
 
 function DashboardLayout({ children }) {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
+    const initials = user?.full_name
+        ? user.full_name
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((part) => part[0])
+              .join("")
+              .toUpperCase()
+        : "R";
 
     const navItems = user?.role === "ADMIN" ? adminNav : user?.role === "MANAGER" ? managerNav : [];
-    const roleLabel = user
-        ? user.role === "ADMIN"
-            ? "Admin Dashboard"
-            : user.role === "MANAGER"
-            ? "Manager Portal"
-            : ""
-        : "";
 
     const handleLogout = async () => {
         try {
@@ -107,6 +113,16 @@ function DashboardLayout({ children }) {
                             )}
                         </div>
                     )}
+                    <button
+                        className="logout-button"
+                        type="button"
+                        onClick={toggleTheme}
+                        title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                    >
+                        {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
+                        {!collapsed && <span>Theme</span>}
+                    </button>
                     <button className="logout-button" type="button" onClick={handleLogout} title="Logout">
                         <LogOut size={19} />
                         {!collapsed && <span>Logout</span>}

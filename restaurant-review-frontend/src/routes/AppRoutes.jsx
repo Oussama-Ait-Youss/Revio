@@ -3,15 +3,16 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import ProtectedRoute from "../guards/ProtectedRoute";
 
-import AdminLayout from "../layouts/AdminLayout";
-import ManagerLayout from "../layouts/ManagerLayout";
+import DashboardLayout from "../layouts/DashboardLayout";
 
 import Login from "../pages/auth/Login";
-import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import RestaurantList from "../pages/admin/RestaurantList";
 import ManagerDashboard from "../pages/manager/ManagerDashboard";
 import ServerList from "../pages/manager/ServerList";
-import ServerDashboard from "../pages/server/ServerDashboard";
+import Reviews from "../pages/manager/Reviews";
+import NfcCards from "../pages/admin/NfcCards";
+import ServerDashboard from "../pages/dashboard/ServerDashboard";
 import ClientReview from "../pages/public/ClientReview";
 
 function LoginRedirect() {
@@ -49,18 +50,27 @@ function AppRoutes() {
                         <Route path="/admin/dashboard" element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={["ADMIN"]}>
-                                    <AdminLayout>
+                                    <DashboardLayout>
                                         <AdminDashboard />
-                                    </AdminLayout>
+                                    </DashboardLayout>
                                 </RoleGuard>
                             </ProtectedRoute>
                         } />
                         <Route path="/admin/restaurants" element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={["ADMIN"]}>
-                                    <AdminLayout>
+                                    <DashboardLayout>
                                         <RestaurantList />
-                                    </AdminLayout>
+                                    </DashboardLayout>
+                                </RoleGuard>
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/admin/nfc-cards" element={
+                            <ProtectedRoute>
+                                <RoleGuard allowedRoles={["ADMIN"]}>
+                                    <DashboardLayout>
+                                        <NfcCards />
+                                    </DashboardLayout>
                                 </RoleGuard>
                             </ProtectedRoute>
                         } />
@@ -69,18 +79,27 @@ function AppRoutes() {
                         <Route path="/manager/dashboard" element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={["MANAGER"]}>
-                                    <ManagerLayout>
+                                    <DashboardLayout>
                                         <ManagerDashboard />
-                                    </ManagerLayout>
+                                    </DashboardLayout>
                                 </RoleGuard>
                             </ProtectedRoute>
                         } />
                         <Route path="/manager/servers" element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={["MANAGER"]}>
-                                    <ManagerLayout>
+                                    <DashboardLayout>
                                         <ServerList />
-                                    </ManagerLayout>
+                                    </DashboardLayout>
+                                </RoleGuard>
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/manager/reviews" element={
+                            <ProtectedRoute>
+                                <RoleGuard allowedRoles={["MANAGER"]}>
+                                    <DashboardLayout>
+                                        <Reviews />
+                                    </DashboardLayout>
                                 </RoleGuard>
                             </ProtectedRoute>
                         } />

@@ -105,21 +105,17 @@ function RestaurantList() {
     }
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in text-slate-800 dark:text-slate-100">
+        <div className="page">
             {/* Header Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white font-serif">
-                        Restaurant Directory
-                    </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Register new venues and assign dedicated restaurant manager accounts.
-                    </p>
+            <header className="page-header">
+                <div className="page-title">
+                    <h1>Restaurant Directory</h1>
+                    <p>Register new venues and assign dedicated restaurant manager accounts.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowRestaurantModal(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-medium text-sm rounded-lg transition-all shadow-sm cursor-pointer"
+                        className="button secondary"
                     >
                         <Plus size={16} /> Add Venue
                     </button>
@@ -131,38 +127,38 @@ function RestaurantList() {
                             }
                             setShowManagerModal(true);
                         }}
-                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-all shadow-sm text-sm cursor-pointer"
+                        className="button"
                     >
                         <Plus size={16} /> Register New Venue Manager
                     </button>
                 </div>
-            </div>
+            </header>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-4 text-red-600 dark:text-red-400 text-sm">
+                <div className="alert">
                     {error}
                 </div>
             )}
 
             {/* Table Wrapper Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+            <section className="panel">
+                <div className="table-wrap">
+                    <table className="data-table">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Restaurant Info</th>
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Contact Details</th>
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Manager Email</th>
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 text-center">Servers</th>
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 text-center">Reviews</th>
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 text-right">Actions</th>
+                            <tr>
+                                <th>Restaurant Info</th>
+                                <th>Contact Details</th>
+                                <th>Manager Email</th>
+                                <th className="text-center">Servers</th>
+                                <th className="text-center">Reviews</th>
+                                <th>Status</th>
+                                <th className="text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tbody>
                             {restaurants.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
+                                    <td colSpan="7" className="empty-state">
                                         No restaurant venues registered.
                                     </td>
                                 </tr>
@@ -259,7 +255,7 @@ function RestaurantList() {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
 
             {/* Creation Modal (Add Restaurant) */}
             {showRestaurantModal && (
