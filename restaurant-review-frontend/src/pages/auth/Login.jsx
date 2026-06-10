@@ -28,18 +28,33 @@ function Login() {
             const response = await axiosClient.post("/login", formData);
             const { access_token, user } = response.data;
             login(user, access_token);
-            navigate(dashboardPath(user.role), { replace: true });
-        } catch (err) {
-            setError(err.response?.status === 422
-                ? "Invalid email or password. Please try again."
-                : "Something went wrong. Please try again.");
+            const getDestination = (role) => {
+                if (role === "ADMIN") return "/admin/dashboard";
+                if (role === "MANAGER") return "/manager/dashboard";
+                if (role === "SERVER") return "/server/dashboard";
+                return "/";
+            };
+            navigate(getDestination(user.role), { replace: true });
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setError("Invalid email or password. Please try again.");
+            } else {
+                setError("Something went wrong. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        if (user) navigate(dashboardPath(user.role), { replace: true });
+        if (!user) return;
+        const getDestination = (role) => {
+            if (role === "ADMIN") return "/admin/dashboard";
+            if (role === "MANAGER") return "/manager/dashboard";
+            if (role === "SERVER") return "/server/dashboard";
+            return "/";
+        };
+        navigate(getDestination(user.role), { replace: true });
     }, [user, navigate]);
 
     return (

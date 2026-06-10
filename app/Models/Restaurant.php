@@ -36,7 +36,7 @@ class Restaurant extends Model
     public function manager(): HasOne
     {
         return $this->hasOne(User::class)->whereHas('role', function ($query) {
-            $query->where('name', Role::MANAGER);
+            $query->where('name', 'MANAGER');
         });
     }
 

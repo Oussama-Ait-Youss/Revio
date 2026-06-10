@@ -14,14 +14,15 @@ import { useAuth } from "../context/AuthContext";
 import axiosClient from "../api/axios";
 
 const adminNav = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { label: "Servers", icon: Users, path: "/dashboard/servers" },
-    { label: "NFC Cards", icon: CreditCard, path: "/dashboard/nfc-cards" },
-    { label: "Reviews", icon: FileSearch, path: "/dashboard/reviews" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { label: "Restaurants", icon: Users, path: "/admin/restaurants" },
+    { label: "NFC Cards", icon: CreditCard, path: "/admin/nfc-cards" },
 ];
 
-const serverNav = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+const managerNav = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/manager/dashboard" },
+    { label: "Team / Servers", icon: Users, path: "/manager/servers" },
+    { label: "Reviews", icon: FileSearch, path: "/manager/reviews" },
 ];
 
 function DashboardLayout({ children }) {
@@ -30,8 +31,14 @@ function DashboardLayout({ children }) {
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
 
-    const navItems = user?.role === "ADMIN" ? adminNav : serverNav;
-    const initials = user?.full_name?.slice(0, 1).toUpperCase() || "R";
+    const navItems = user?.role === "ADMIN" ? adminNav : user?.role === "MANAGER" ? managerNav : [];
+    const roleLabel = user
+        ? user.role === "ADMIN"
+            ? "Admin Dashboard"
+            : user.role === "MANAGER"
+            ? "Manager Portal"
+            : ""
+        : "";
 
     const handleLogout = async () => {
         try {

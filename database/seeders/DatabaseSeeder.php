@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Role;
 use App\Models\Restaurant;
 use App\Models\Server;
 use App\Models\NfcCard;
 use App\Models\Review;
-use App\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
     {
         /*
         |--------------------------------------------------------------------------
-        | 1. Create Restaurants
+        | 1. Seed Roles Table First (Required by users foreign key constraint)
         |--------------------------------------------------------------------------
         | We create two separate restaurants to properly test data isolation.
         */
@@ -47,12 +47,12 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | 2. Create the App Owner (SUPER_ADMIN)
+        | 2. Create the ADMIN User (Platform Owner)
         |--------------------------------------------------------------------------
-        | App Owners do not belong to any restaurant, so restaurant_id is null.
+        | restaurant_id must be null
         */
         User::create([
-            'full_name' => 'Revio Owner',
+            'full_name' => 'Platform Owner',
             'email' => 'owner@revio.me',
             'password' => bcrypt('password123'),
             'role_id' => $superAdminRole->id,
@@ -62,22 +62,34 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | 3. Create Restaurant Managers
+        | 3. Create the Unconfigured Manager User
         |--------------------------------------------------------------------------
-        | Each manager must be bound explicitly to their respective restaurant.
+        | restaurant_id must be null to test onboarding wizard flow
         */
         User::create([
-            'full_name' => 'Manager Marrakchi',
-            'email' => 'manager1@example.com',
+            'full_name' => 'Unconfigured Manager',
+            'email' => 'unconfigured@manager.com',
             'password' => bcrypt('password123'),
             'role_id' => $managerRole->id,
             'restaurant_id' => $restaurant1->id,
             'is_active' => true,
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Create Active Restaurant and Assigned MANAGER Account
+        |--------------------------------------------------------------------------
+        */
+        $restaurant = Restaurant::create([
+            'name' => 'Le Marrakchi',
+            'address' => 'Jemaa el-Fnaa, Marrakech',
+            'phone' => '0524400000',
+            'status' => 'ACTIVE'
+        ]);
+
         User::create([
-            'full_name' => 'Manager Trattoria',
-            'email' => 'manager2@example.com',
+            'full_name' => 'Restaurant Manager',
+            'email' => 'manager@example.com',
             'password' => bcrypt('password123'),
             'role_id' => $managerRole->id,
             'restaurant_id' => $restaurant2->id,
@@ -86,15 +98,13 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | 4. Create Servers, NFC Cards, and Reviews
+        | 5. Create 5 SERVERS under Le Marrakchi
         |--------------------------------------------------------------------------
-        | We will generate 10 servers split across both restaurants.
+        | Unique user_id and restaurant_id values, active nfc_cards,
+        | and simple customer reviews (id, rating, comment, server_id, restaurant_id, timestamps)
         */
-        for ($i = 1; $i <= 10; $i++) {
-            // Alternate between Restaurant 1 and Restaurant 2
-            $currentRestaurant = ($i % 2 === 0) ? $restaurant1 : $restaurant2;
-
-            // Create Server User account
+        for ($i = 1; $i <= 5; $i++) {
+            // Create Server User Account
             $user = User::create([
                 'full_name' => "Server User {$i}",
                 'email' => "server{$i}@example.com",
@@ -104,25 +114,26 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]);
 
-            // Create Server Business Profile
+            // Create Server Profile
             $server = Server::create([
                 'user_id' => $user->id,
-                'restaurant_id' => $currentRestaurant->id,
+                'restaurant_id' => $restaurant->id,
                 'phone' => "061234567{$i}",
+                'total_reviews' => 3,
             ]);
 
-            // Create NFC card matching the updated schema constraint rules
+            // Create Active NFC Card
             NfcCard::create([
                 'uid' => "UID-" . strtoupper(Str::random(6)) . "-{$i}",
                 'public_token' => Str::random(32),
                 'is_active' => true,
-                'restaurant_id' => $currentRestaurant->id,
+                'restaurant_id' => $restaurant->id,
                 'server_id' => $server->id,
                 'assigned_at' => now(),
             ]);
 
-            // Create 5 reviews linked to that specific server and restaurant environment
-            for ($j = 1; $j <= 5; $j++) {
+            // Create 3 reviews per server
+            for ($j = 1; $j <= 3; $j++) {
                 Review::create([
                     'restaurant_id' => $currentRestaurant->id,
                     'server_id' => $server->id,

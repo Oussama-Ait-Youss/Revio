@@ -14,6 +14,11 @@ class ReviewController extends Controller
     public function index(Request $request)
     {
         $query = Review::with(['server.user']);
+        $user = $request->user();
+
+        if ($user && $user->role && $user->role->name === \App\Models\Role::MANAGER) {
+            $query->where('restaurant_id', $user->restaurant_id);
+        }
 
         if ($request->filled('server_id')) {
             $query->where('server_id', $request->server_id);
@@ -28,8 +33,6 @@ class ReviewController extends Controller
                 $query->where('rating', $rating);
             }
         }
-
-
 
         if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);
@@ -54,7 +57,6 @@ class ReviewController extends Controller
             'server_id' => 'required|exists:servers,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
-
         ]);
 
         $server = Server::find($request->server_id);
@@ -67,9 +69,9 @@ class ReviewController extends Controller
 
         $review = Review::create([
             'server_id' => $server->id,
+            'restaurant_id' => $server->restaurant_id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-
         ]);
 
         $server->increment('total_reviews');
