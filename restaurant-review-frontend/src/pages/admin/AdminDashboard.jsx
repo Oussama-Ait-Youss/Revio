@@ -80,7 +80,7 @@ function AdminDashboard() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
                 <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl p-6 max-w-md shadow-sm">
-                    <p className="text-red-650 dark:text-red-400 font-semibold mb-4 text-sm">{error}</p>
+                    <p className="text-red-600 dark:text-red-400 font-semibold mb-4 text-sm">{error}</p>
                     <button
                         onClick={() => fetchData()}
                         className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"
@@ -156,7 +156,7 @@ function AdminDashboard() {
                                         <th className="px-5 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Created Date</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {restaurants.length === 0 ? (
                                         <tr>
                                             <td colSpan="4" className="px-5 py-8 text-center text-slate-400 dark:text-slate-550 text-sm">
@@ -166,13 +166,13 @@ function AdminDashboard() {
                                     ) : (
                                         restaurants.slice(0, 5).map((rest) => (
                                             <tr key={rest.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/25 transition-colors">
-                                                <td className="px-5 py-4.5 text-sm font-bold text-slate-900 dark:text-white">
+                                                <td className="px-5 py-[18px] text-sm font-bold text-slate-900 dark:text-white">
                                                     {rest.name}
                                                 </td>
-                                                <td className="px-5 py-4.5 text-sm text-slate-500 dark:text-slate-400">
+                                                <td className="px-5 py-[18px] text-sm text-slate-500 dark:text-slate-400">
                                                     {rest.phone}
                                                 </td>
-                                                <td className="px-5 py-4.5">
+                                                <td className="px-5 py-[18px]">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                                                         rest.status === "ACTIVE"
                                                             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200/20"
@@ -181,7 +181,7 @@ function AdminDashboard() {
                                                         {rest.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-5 py-4.5 text-sm text-slate-400">
+                                                <td className="px-5 py-[18px] text-sm text-slate-400">
                                                     {rest.created_at 
                                                         ? new Date(rest.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                                                         : "—"}
@@ -204,12 +204,12 @@ function AdminDashboard() {
 
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4 max-h-[360px] overflow-y-auto">
                         {systemLogs.map((log) => (
-                            <div key={log.id} className="flex gap-3 text-xs leading-relaxed border-b border-slate-100 dark:border-slate-850 pb-3 last:border-0 last:pb-0">
-                                <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-650 dark:text-indigo-400 shrink-0 mt-0.5">
+                            <div key={log.id} className="flex gap-3 text-xs leading-relaxed border-b border-slate-100 dark:border-slate-800 pb-3 last:border-0 last:pb-0">
+                                <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5">
                                     <Activity size={12} />
                                 </div>
                                 <div className="space-y-0.5">
-                                    <div className="font-bold text-slate-850 dark:text-slate-100">{log.action}</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-100">{log.action}</div>
                                     <div className="text-slate-400 dark:text-slate-500">{log.detail}</div>
                                     <span className="inline-block text-[10px] text-indigo-500 font-semibold mt-1">{log.time}</span>
                                 </div>
