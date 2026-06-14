@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Mail, Phone, CreditCard, Star, RefreshCw, X, Loader2, UserCheck, ShieldAlert } from "lucide-react";
 import axiosClient from "../../api/axios";
 import PortalModal from "../../components/modals/PortalModal";
+import { useAuth } from "../../context/AuthContext";
 function ServerList() {
+    const { user } = useAuth();
     const [servers, setServers] = useState([]);
     const [nfcCards, setNfcCards] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -79,14 +81,20 @@ function ServerList() {
 
         try {
             const token = localStorage.getItem("token");
+            const payload = {
+                ...formData,
+                restaurant_id: user?.restaurant_id, // 👈 Forced security constraint
+                role: 'SERVER'
+            };
+
             if (editingServer) {
                 // UPDATE
-                await axiosClient.put(`/servers/${editingServer.id}`, formData, {
+                await axiosClient.put(`/servers/${editingServer.id}`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             } else {
                 // CREATE
-                await axiosClient.post("/servers", { ...formData, role: 'SERVER' }, {
+                await axiosClient.post("/servers", payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
