@@ -15,8 +15,18 @@ class NfcCard extends Model
 
     protected $fillable = ['uid', 'restaurant_id', 'public_token', 'qr_code_url', 'is_active', 'server_id', 'assigned_at'];
 
-public function server(): BelongsTo
-{
-    return $this->belongsTo(Server::class);
-}
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(Server::class);
+    }
+
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
+
+    public function scopeUnallocated($query)
+    {
+        return $query->whereNull('restaurant_id');
+    }
 }

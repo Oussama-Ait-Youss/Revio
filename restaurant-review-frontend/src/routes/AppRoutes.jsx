@@ -9,6 +9,7 @@ import ManagerLayout from "../layouts/ManagerLayout";
 import Login from "../pages/auth/Login";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import RestaurantList from "../pages/admin/RestaurantList";
+import AdminNfcManagement from "../pages/admin/NfcManagement";
 import ManagerDashboard from "../pages/manager/ManagerDashboard";
 import ServerList from "../pages/manager/ServerList";
 import ManagerNfcCards from "../pages/manager/NfcCards";
@@ -61,6 +62,15 @@ function AppRoutes() {
                                 <RoleGuard allowedRoles={["ADMIN"]}>
                                     <AdminLayout>
                                         <RestaurantList />
+                                    </AdminLayout>
+                                </RoleGuard>
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/admin/nfc-management" element={
+                            <ProtectedRoute>
+                                <RoleGuard allowedRoles={["ADMIN"]}>
+                                    <AdminLayout>
+                                        <AdminNfcManagement />
                                     </AdminLayout>
                                 </RoleGuard>
                             </ProtectedRoute>
