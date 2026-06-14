@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ServerController;
 use App\Http\Controllers\Api\NfcCardController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\NfcRequestController;
+use App\Http\Controllers\Api\Admin\AdminNfcController;
 
 Route::get('/review/{token}', [ReviewController::class, 'getServerByToken']);
 Route::post('/review', [ReviewController::class, 'store']);
@@ -52,6 +53,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/restaurants', [\App\Http\Controllers\Api\RestaurantController::class, 'index']);
         Route::post('/admin/restaurants', [\App\Http\Controllers\Api\RestaurantController::class, 'store']);
         Route::post('/admin/managers', [\App\Http\Controllers\Api\RestaurantController::class, 'addManager']);
+
+        // Admin NFC Logistics
+        Route::post('/admin/nfc/manufacture', [AdminNfcController::class, 'manufacture']);
+        Route::get('/admin/nfc/requests-queue', [AdminNfcController::class, 'requestsQueue']);
+        Route::patch('/admin/nfc/requests/{id}/process', [AdminNfcController::class, 'process']);
     });
 
     // SERVER only routes
