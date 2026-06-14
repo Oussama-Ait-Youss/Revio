@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import axiosClient from "../api/axios";
-import { LogOut, UtensilsCrossed } from "lucide-react";
+import { LogOut, UtensilsCrossed, Sun, Moon } from "lucide-react";
 
 function ServerLayout({ children }) {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -18,45 +20,46 @@ function ServerLayout({ children }) {
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#fafaf8", fontFamily: "sans-serif" }}>
+        <div className="flex flex-col h-screen bg-bg transition-colors duration-300 font-sans">
             
             {/* Top Banner */}
-            <div style={{
-                background: "#0f0f0f",
-                padding: "1rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                color: "#fff",
-            }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{
-                        width: "36px", height: "36px", background: "#c9a96e",
-                        borderRadius: "8px", display: "flex", alignItems: "center",
-                        justifyContent: "center"
-                    }}>
-                        <UtensilsCrossed size={18} color="#0f0f0f" />
+            <div className="bg-surface shadow-sm border-b border-panel-border p-4 flex items-center justify-between transition-colors duration-300">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                        <UtensilsCrossed size={20} className="text-white" />
                     </div>
                     <div>
-                        <span style={{ fontSize: "16px", fontWeight: "bold", letterSpacing: "0.08em" }}>REVIO</span>
-                        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>Server Portal</div>
+                        <span className="font-serif font-bold text-lg tracking-wider text-text-main">REVIO</span>
+                        <div className="text-xs text-muted uppercase tracking-widest font-semibold mt-0.5">Server Portal</div>
                     </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                    <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.8)" }}>{user?.full_name}</span>
-                    <button onClick={handleLogout} style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        color: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center"
-                    }}>
+                <div className="flex items-center gap-4">
+                    <span className="hidden sm:block text-sm font-semibold text-text-main px-3 py-1 bg-surface-muted rounded-full border border-line">
+                        {user?.full_name}
+                    </span>
+                    
+                    <button 
+                        onClick={toggleTheme} 
+                        className="p-2 text-muted hover:text-warning hover:bg-surface-muted rounded-full transition-all cursor-pointer"
+                        title="Toggle Theme"
+                    >
+                        {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                    </button>
+                    
+                    <button 
+                        onClick={handleLogout} 
+                        className="p-2 text-muted hover:text-danger hover:bg-danger-soft rounded-full transition-all cursor-pointer"
+                        title="Logout"
+                    >
                         <LogOut size={20} />
                     </button>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
-                <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+            <div className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
+                <div className="max-w-2xl mx-auto w-full">
                     {children}
                 </div>
             </div>

@@ -1,26 +1,12 @@
 import { useEffect, useState } from "react";
 import { Edit2, Plus, Search, Trash2, X } from "lucide-react";
 import axiosClient from "../../api/axios";
-
+import Modal from "../../components/modals/PortalModal";
 const token = () => localStorage.getItem("token");
 const headers = () => ({ Authorization: `Bearer ${token()}` });
 const emptyForm = { full_name: "", email: "", password: "", phone: "", nfc_card_id: "" };
 
-function Modal({ title, onClose, children }) {
-    return (
-        <div className="modal-backdrop">
-            <div className="modal">
-                <div className="modal-header">
-                    <h2>{title}</h2>
-                    <button className="icon-action" type="button" onClick={onClose} aria-label="Close" title="Close">
-                        <X size={18} />
-                    </button>
-                </div>
-                {children}
-            </div>
-        </div>
-    );
-}
+
 
 function Input({ label, ...props }) {
     return (

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, ShieldCheck, Star, TrendingUp, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, ShieldCheck, Star, TrendingUp, UtensilsCrossed, Moon, Sun } from "lucide-react";
 import axiosClient from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 
 function Login() {
     const { user, login } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -58,7 +60,14 @@ function Login() {
     }, [user, navigate]);
 
     return (
-        <div className="login-page">
+        <div className="login-page relative">
+            <button
+                onClick={toggleTheme}
+                className="absolute top-6 right-6 z-50 p-3 bg-surface border border-panel-border text-muted rounded-full hover:bg-surface-muted cursor-pointer shadow-sm transition-all"
+                title="Toggle Theme"
+            >
+                {theme === "dark" ? <Sun size={20} className="text-warning" /> : <Moon size={20} />}
+            </button>
             <section className="login-visual">
                 <div className="brand-row">
                     <div className="brand-mark">

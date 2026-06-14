@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Link as LinkIcon, Plus, Power, Search, Trash2, X } from "lucide-react";
 import axiosClient from "../../api/axios";
-
+import Modal from "../../components/modals/PortalModal";
 const token = () => localStorage.getItem("token");
 const headers = () => ({ Authorization: `Bearer ${token()}` });
 
@@ -14,21 +14,7 @@ function Input({ label, ...props }) {
     );
 }
 
-function Modal({ title, onClose, children }) {
-    return (
-        <div className="modal-backdrop">
-            <div className="modal">
-                <div className="modal-header">
-                    <h2>{title}</h2>
-                    <button className="icon-action" type="button" onClick={onClose} aria-label="Close" title="Close">
-                        <X size={18} />
-                    </button>
-                </div>
-                {children}
-            </div>
-        </div>
-    );
-}
+
 
 function NfcCards() {
     const [cards, setCards] = useState([]);
@@ -117,7 +103,7 @@ function NfcCards() {
     };
 
     return (
-        <div className="page">
+        <div className="page space-y-8">
             <header className="page-header">
                 <div className="page-title">
                     <h1>NFC cards</h1>
@@ -131,56 +117,54 @@ function NfcCards() {
             <div className="toolbar">
                 <div className="search-field">
                     <Search size={18} />
-                    <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search UID or server" />
+                    <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search UID or server" />
                 </div>
             </div>
 
-            <section className="panel">
-                <div className="table-wrap">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                {["UID", "Assigned to", "Assigned at", "Status", "Actions"].map((header) => <th key={header}>{header}</th>)}
+            <section className="table-wrap">
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            {["UID", "Assigned to", "Assigned at", "Status", "Actions"].map((header) => <th key={header}>{header}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan={5} className="loading-state">Loading cards...</td></tr>
+                        ) : filtered.length === 0 ? (
+                            <tr><td colSpan={5} className="empty-state">No cards found.</td></tr>
+                        ) : filtered.map((card) => (
+                            <tr key={card.id}>
+                                <td><span className="code-pill">{card.uid}</span></td>
+                                <td><span className="font-bold text-text-main">{card.server?.user?.full_name || "-"}</span></td>
+                                <td className="text-muted">{card.assigned_at ? new Date(card.assigned_at).toLocaleDateString() : "-"}</td>
+                                <td>
+                                    <span className={`status-pill ${card.is_active ? "active" : "inactive"}`}>
+                                        {card.is_active ? "Active" : "Inactive"}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div className="actions">
+                                        <button className="icon-action" type="button" onClick={() => handleToggle(card.id)} aria-label="Toggle card status" title={card.is_active ? "Deactivate card" : "Activate card"}>
+                                            {card.is_active ? <Power size={16} className="text-danger" /> : <Check size={16} className="text-success" />}
+                                        </button>
+                                        <button className="icon-action" type="button" onClick={() => { setSelectedCard(card); setSelectedServer(card.server_id || ""); setShowAssign(true); }} aria-label="Assign card" title="Assign card">
+                                            <LinkIcon size={16} />
+                                        </button>
+                                        <button className="icon-action danger" type="button" onClick={() => handleDelete(card.id)} aria-label="Delete card" title="Delete card">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan={5} className="loading-state">Loading cards...</td></tr>
-                            ) : filtered.length === 0 ? (
-                                <tr><td colSpan={5} className="empty-state">No cards found.</td></tr>
-                            ) : filtered.map((card) => (
-                                <tr key={card.id}>
-                                    <td><span className="code-pill">{card.uid}</span></td>
-                                    <td>{card.server?.user?.full_name || "-"}</td>
-                                    <td>{card.assigned_at ? new Date(card.assigned_at).toLocaleDateString() : "-"}</td>
-                                    <td>
-                                        <span className={`status-pill ${card.is_active ? "active" : "inactive"}`}>
-                                            {card.is_active ? "Active" : "Inactive"}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="actions">
-                                            <button className="icon-action" type="button" onClick={() => handleToggle(card.id)} aria-label="Toggle card status" title={card.is_active ? "Deactivate card" : "Activate card"}>
-                                                {card.is_active ? <Power size={16} /> : <Check size={16} />}
-                                            </button>
-                                            <button className="icon-action" type="button" onClick={() => { setSelectedCard(card); setSelectedServer(card.server_id || ""); setShowAssign(true); }} aria-label="Assign card" title="Assign card">
-                                                <LinkIcon size={16} />
-                                            </button>
-                                            <button className="icon-action danger" type="button" onClick={() => handleDelete(card.id)} aria-label="Delete card" title="Delete card">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                    </tbody>
+                </table>
             </section>
 
             {showAdd && (
                 <Modal title="Add NFC card" onClose={() => setShowAdd(false)}>
-                    <form onSubmit={handleAdd}>
+                    <form onSubmit={handleAdd} className="space-y-4">
                         <Input label="UID" value={addForm.uid} onChange={(e) => setAddForm({ ...addForm, uid: e.target.value })} required placeholder="04:A1:B2:C3:D4" />
                         <Input label="Public token" value={addForm.public_token} onChange={(e) => setAddForm({ ...addForm, public_token: e.target.value })} required placeholder="Unique token" />
                         <Input label="QR code URL" value={addForm.qr_code_url} onChange={(e) => setAddForm({ ...addForm, qr_code_url: e.target.value })} placeholder="https://..." />
@@ -193,7 +177,7 @@ function NfcCards() {
                                 ))}
                             </select>
                         </div>
-                        <div className="form-actions">
+                        <div className="form-actions mt-6">
                             <button className="button secondary" type="button" onClick={() => setShowAdd(false)}>Cancel</button>
                             <button className="button" type="submit" disabled={saving}>{saving ? "Saving..." : "Add card"}</button>
                         </div>
@@ -203,7 +187,7 @@ function NfcCards() {
 
             {showAssign && (
                 <Modal title="Assign NFC card" onClose={() => setShowAssign(false)}>
-                    <form onSubmit={handleAssign}>
+                    <form onSubmit={handleAssign} className="space-y-4">
                         <div className="field">
                             <label>Select server</label>
                             <select className="select" value={selectedServer} onChange={(e) => setSelectedServer(e.target.value)} required>
@@ -213,7 +197,7 @@ function NfcCards() {
                                 ))}
                             </select>
                         </div>
-                        <div className="form-actions">
+                        <div className="form-actions mt-6">
                             <button className="button secondary" type="button" onClick={() => setShowAssign(false)}>Cancel</button>
                             <button className="button" type="submit" disabled={saving}>{saving ? "Saving..." : "Assign"}</button>
                         </div>
