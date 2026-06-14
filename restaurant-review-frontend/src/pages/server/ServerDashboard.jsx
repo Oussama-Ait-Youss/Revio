@@ -63,23 +63,23 @@ function ServerDashboard() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 gap-3">
-                <Loader2 size={36} className="animate-spin text-[#c9a96e]" />
-                <span className="text-zinc-500 dark:text-zinc-400 text-sm font-semibold">Loading your numbers...</span>
+            <div className="loading-state h-screen bg-bg">
+                <Loader2 size={36} className="animate-spin text-primary mx-auto mb-4" />
+                <span>Loading your numbers...</span>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-bg text-text-main flex flex-col font-sans transition-colors duration-300">
             {/* Top Navigation Bar */}
-            <header className="sticky top-0 z-40 w-full bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors duration-300">
+            <header className="sticky top-0 z-40 w-full bg-surface border-b border-line shadow-sm transition-colors duration-300">
                 <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-[#c9a96e] rounded-lg flex items-center justify-center">
-                            <Sparkles size={16} className="text-zinc-950" />
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <Sparkles size={16} className="text-bg" />
                         </div>
-                        <span className="font-serif font-bold tracking-wider text-base text-zinc-950 dark:text-white">
+                        <span className="font-serif font-bold tracking-wider text-base text-text-main">
                             REVIO
                         </span>
                     </div>
@@ -88,19 +88,19 @@ function ServerDashboard() {
                         <button
                             onClick={() => fetchMyReviews(true)}
                             disabled={refreshing}
-                            className="p-2 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white rounded-lg cursor-pointer"
+                            className="p-2 text-muted hover:text-text-main rounded-lg cursor-pointer"
                         >
                             <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
                         </button>
                         <button
                             onClick={toggleTheme}
-                            className="p-2 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white rounded-lg cursor-pointer"
+                            className="p-2 text-muted hover:text-text-main rounded-lg cursor-pointer"
                         >
-                            {theme === "dark" ? <Sun size={18} className="text-[#c9a96e]" /> : <Moon size={18} />}
+                            {theme === "dark" ? <Sun size={18} className="text-warning" /> : <Moon size={18} />}
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-lg cursor-pointer"
+                            className="p-2 text-danger hover:text-danger rounded-lg cursor-pointer"
                         >
                             <LogOut size={18} />
                         </button>
@@ -114,19 +114,19 @@ function ServerDashboard() {
                 {/* User Greeting & Card Connection Badge */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold text-zinc-950 dark:text-white">
+                        <h1 className="text-xl font-bold text-text-main">
                             Hello, {server?.user?.full_name?.split(" ")[0] || "Server"}
                         </h1>
-                        <p className="text-xs text-zinc-400 mt-0.5">Track your customer reviews below</p>
+                        <p className="text-xs text-muted mt-0.5">Track your customer reviews below</p>
                     </div>
 
                     {isCardConnected ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-150 dark:border-green-900/30">
+                        <span className="rating-pill good">
                             <CreditCard size={12} />
                             Connected
                         </span>
                     ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-xs font-bold rounded-full border border-red-150 dark:border-red-900/30">
+                        <span className="rating-pill bad">
                             <CreditCard size={12} />
                             No Card Linked
                         </span>
@@ -134,7 +134,7 @@ function ServerDashboard() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl p-4 text-red-650 dark:text-red-400 text-sm">
+                    <div className="alert">
                         {error}
                     </div>
                 )}
@@ -142,23 +142,23 @@ function ServerDashboard() {
                 {/* Scorecards */}
                 <div className="grid grid-cols-2 gap-4">
                     {/* Average Rating Card */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                            <Star size={14} className="text-amber-500 fill-amber-500" />
+                    <div className="panel padded hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-1.5 text-muted text-xs font-semibold uppercase tracking-wider mb-2">
+                            <Star size={14} className="text-warning fill-warning" />
                             Avg Rating
                         </div>
-                        <h3 className="text-3xl font-extrabold text-zinc-950 dark:text-white">
-                            {avgRating} <span className="text-xs text-zinc-400 font-normal">/ 5</span>
+                        <h3 className="text-3xl font-extrabold text-text-main">
+                            {avgRating} <span className="text-xs text-muted font-normal">/ 5</span>
                         </h3>
                     </div>
 
                     {/* Total Reviews Card */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                            <MessageSquare size={14} className="text-indigo-500" />
+                    <div className="panel padded hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-1.5 text-muted text-xs font-semibold uppercase tracking-wider mb-2">
+                            <MessageSquare size={14} className="text-primary" />
                             Total Reviews
                         </div>
-                        <h3 className="text-3xl font-extrabold text-zinc-950 dark:text-white">
+                        <h3 className="text-3xl font-extrabold text-text-main">
                             {totalReviews}
                         </h3>
                     </div>
@@ -166,20 +166,20 @@ function ServerDashboard() {
 
                 {/* Feed Section */}
                 <div className="space-y-4">
-                    <h2 className="text-base font-bold text-zinc-950 dark:text-white flex items-center gap-2">
+                    <h2 className="text-base font-bold text-text-main flex items-center gap-2">
                         Recent Feedback Feed
                     </h2>
 
                     <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
                         {reviews.length === 0 ? (
-                            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center text-zinc-400 dark:text-zinc-500">
+                            <div className="panel padded text-center text-muted">
                                 No customer reviews recorded yet. Tap cards to collect reviews!
                             </div>
                         ) : (
                             reviews.map((review) => (
                                 <div 
                                     key={review.id} 
-                                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm space-y-2.5 transform hover:scale-[1.01] transition-transform duration-200"
+                                    className="panel padded space-y-2.5 transform hover:scale-[1.01] transition-transform duration-200"
                                 >
                                     <div className="flex items-center justify-between">
                                         {/* Stars */}
@@ -190,18 +190,18 @@ function ServerDashboard() {
                                                     size={14} 
                                                     className={`${
                                                         i < review.rating 
-                                                            ? "text-amber-500 fill-amber-500" 
-                                                            : "text-zinc-200 dark:text-zinc-800"
+                                                            ? "text-warning fill-warning" 
+                                                            : "text-line"
                                                     }`} 
                                                 />
                                             ))}
                                         </div>
-                                        <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">
+                                        <span className="text-[10px] font-semibold text-muted uppercase tracking-widest">
                                             {review.created_at ? new Date(review.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ""}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium">
-                                        {review.comment || <span className="italic text-zinc-400">"Rating only review"</span>}
+                                    <p className="text-sm text-text-main leading-relaxed font-medium">
+                                        {review.comment || <span className="italic text-muted">"Rating only review"</span>}
                                     </p>
                                 </div>
                             ))

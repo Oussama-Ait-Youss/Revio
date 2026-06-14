@@ -9,8 +9,11 @@ import {
     PanelLeftOpen,
     UtensilsCrossed,
     Users,
+    Sun,
+    Moon
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import axiosClient from "../api/axios";
 
 const adminNav = [
@@ -27,18 +30,20 @@ const managerNav = [
 
 function DashboardLayout({ children }) {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
 
     const navItems = user?.role === "ADMIN" ? adminNav : user?.role === "MANAGER" ? managerNav : [];
-    const roleLabel = user
-        ? user.role === "ADMIN"
-            ? "Admin Dashboard"
-            : user.role === "MANAGER"
-            ? "Manager Portal"
-            : ""
-        : "";
+    
+    // Get initials safely
+    const getInitials = (name) => {
+        if (!name) return "U";
+        return name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+    };
+    
+    const initials = getInitials(user?.full_name);
 
     const handleLogout = async () => {
         try {
@@ -62,7 +67,7 @@ function DashboardLayout({ children }) {
                     {!collapsed && (
                         <div className="brand-copy">
                             <strong>Revio</strong>
-                            <span>{user?.role === "ADMIN" ? "Admin workspace" : "Server workspace"}</span>
+                            <span>{user?.role === "ADMIN" ? "Admin Workspace" : "Manager Workspace"}</span>
                         </div>
                     )}
                     <button
@@ -107,7 +112,19 @@ function DashboardLayout({ children }) {
                             )}
                         </div>
                     )}
-                    <button className="logout-button" type="button" onClick={handleLogout} title="Logout">
+                    
+                    <button 
+                        className="logout-button" 
+                        type="button" 
+                        onClick={toggleTheme} 
+                        title="Toggle Theme"
+                        style={{ color: 'var(--text)' }}
+                    >
+                        {theme === "dark" ? <Sun size={19} className="text-warning" /> : <Moon size={19} />}
+                        {!collapsed && <span>Theme Mode</span>}
+                    </button>
+                    
+                    <button className="logout-button !text-danger" type="button" onClick={handleLogout} title="Logout">
                         <LogOut size={19} />
                         {!collapsed && <span>Logout</span>}
                     </button>
