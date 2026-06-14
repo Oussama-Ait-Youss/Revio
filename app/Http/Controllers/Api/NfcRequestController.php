@@ -17,7 +17,7 @@ class NfcRequestController extends Controller
         $user = $request->user();
 
         // Ensure user is MANAGER and has a restaurant
-        if ($user->role !== 'MANAGER' || !$user->restaurant_id) {
+        if (!$user->role || $user->role->name !== \App\Models\Role::MANAGER || !$user->restaurant_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -25,7 +25,16 @@ class NfcRequestController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json($requests);
+        $metrics = [
+            'total_active' => \App\Models\NfcCard::where('restaurant_id', $user->restaurant_id)->whereNotNull('server_id')->count(),
+            'available_inventory' => \App\Models\NfcCard::where('restaurant_id', $user->restaurant_id)->whereNull('server_id')->count(),
+            'pending_requests' => NfcRequest::where('restaurant_id', $user->restaurant_id)->where('status', 'PENDING')->count(),
+        ];
+
+        return response()->json([
+            'requests' => $requests,
+            'metrics' => $metrics
+        ]);
     }
 
     /**
@@ -36,7 +45,7 @@ class NfcRequestController extends Controller
         $user = $request->user();
 
         // Ensure user is MANAGER
-        if ($user->role !== 'MANAGER') {
+        if (!$user->role || $user->role->name !== \App\Models\Role::MANAGER) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

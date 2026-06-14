@@ -1,140 +1,173 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
-import axios from "axios";
+import { Plus, CreditCard, Package, Clock, ShieldAlert } from "lucide-react";
+import axiosClient from "../../api/axios";
 import RequestCardsModal from "../../components/modals/RequestCardsModal";
 
 export default function NfcCards() {
     const [requests, setRequests] = useState([]);
+    const [metrics, setMetrics] = useState({
+        total_active: 0,
+        available_inventory: 0,
+        pending_requests: 0
+    });
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const fetchRequests = async () => {
+    const fetchData = async () => {
         setLoading(true);
+        setError(null);
         try {
-            const res = await axios.get("/api/manager/nfc-requests", {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            const token = localStorage.getItem('token');
+            const res = await axiosClient.get("/manager/nfc-requests", {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            setRequests(res.data);
+            setRequests(res.data.requests || []);
+            setMetrics(res.data.metrics || {
+                total_active: 0,
+                available_inventory: 0,
+                pending_requests: 0
+            });
         } catch (e) {
-            console.error("Failed to fetch NFC requests", e);
+            console.error("Failed to fetch NFC data", e);
+            setError("Failed to load inventory data.");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchRequests();
+        fetchData();
     }, []);
 
     const handleModalSuccess = () => {
         setIsModalOpen(false);
-        fetchRequests();
+        fetchData();
     };
 
     const getStatusBadge = (status) => {
-        let bg = "#f0f0f0";
-        let color = "#555";
-        
+        let styleClass = "neutral";
         if (status === "PENDING") {
-            bg = "#fff4e5";
-            color = "#b26500";
+            styleClass = "warning";
         } else if (status === "APPROVED") {
-            bg = "#eaf3de";
-            color = "#3b6d11";
+            styleClass = "success";
         } else if (status === "REJECTED") {
-            bg = "#fce8e8";
-            color = "#a32d2d";
+            styleClass = "danger";
         }
 
         return (
-            <span style={{
-                background: bg, color: color, padding: "4px 10px", 
-                borderRadius: "20px", fontSize: "12px", fontWeight: 600
-            }}>
+            <span className={`status-pill ${styleClass}`}>
                 {status}
             </span>
         );
     };
 
     return (
-        <div style={{ padding: "2rem", height: "100%", boxSizing: "border-box", fontFamily: "sans-serif" }}>
+        <div className="page space-y-8">
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                <div>
-                    <h1 style={{ fontSize: "1.4rem", fontWeight: 600, margin: 0, color: "#0f0f0f" }}>NFC Cards Fleet</h1>
-                    <p style={{ color: "#888", fontSize: "14px", margin: "4px 0 0" }}>Manage your restaurant's NFC cards and orders</p>
+            <div className="page-header">
+                <div className="page-title">
+                    <h1>NFC Cards Inventory</h1>
+                    <p>Manage your restaurant's NFC cards and orders</p>
                 </div>
                 <button 
                     onClick={() => setIsModalOpen(true)}
-                    style={{
-                        display: "flex", alignItems: "center", gap: "8px",
-                        background: "#0f0f0f", color: "#c9a96e", border: "none",
-                        padding: "10px 18px", borderRadius: "8px", cursor: "pointer",
-                        fontSize: "14px", fontFamily: "sans-serif", fontWeight: 600
-                    }}
+                    className="button"
                 >
-                    <Plus size={16} /> Request Cards from Admin
+                    <Plus size={18} /> Request Cards from Admin
                 </button>
             </div>
 
+            {error && (
+                <div className="alert">
+                    <ShieldAlert size={16} className="shrink-0" />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="panel p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-success-soft text-success flex items-center justify-center shrink-0 shadow-sm border border-success-soft">
+                        <CreditCard size={24} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-muted tracking-wider uppercase">Active Cards</p>
+                        <p className="text-3xl font-bold text-text-main mt-1">{metrics.total_active}</p>
+                    </div>
+                </div>
+
+                <div className="panel p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary-soft">
+                        <Package size={24} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-muted tracking-wider uppercase">Available Inventory</p>
+                        <p className="text-3xl font-bold text-text-main mt-1">{metrics.available_inventory}</p>
+                    </div>
+                </div>
+
+                <div className="panel p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-warning-soft text-warning flex items-center justify-center shrink-0 shadow-sm border border-warning-soft">
+                        <Clock size={24} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-muted tracking-wider uppercase">Pending Requests</p>
+                        <p className="text-3xl font-bold text-text-main mt-1">{metrics.pending_requests}</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Request History Section */}
-            <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "#0f0f0f", marginBottom: "1rem", marginTop: "2rem" }}>Recent Card Orders</h2>
-            
-            <div style={{ background: "#fff", borderRadius: "12px", border: "1px solid #eee", overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-                    <thead>
-                        <tr style={{ background: "#fafaf8", borderBottom: "1px solid #eee" }}>
-                            {["Request Date", "Quantity", "Status", "Notes"].map(h => (
-                                <th key={h} style={{
-                                    padding: "12px 16px", textAlign: "left",
-                                    fontSize: "12px", color: "#888", fontWeight: 500,
-                                    letterSpacing: "0.05em", textTransform: "uppercase",
-                                }}>
-                                    {h}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
+            <section className="panel mt-8">
+                <div className="p-5 border-b border-line flex items-center justify-between bg-surface-muted/30">
+                    <h2 className="text-lg font-bold text-text-main flex items-center gap-2">Recent Card Orders</h2>
+                </div>
+                <div className="table-wrap">
+                    <table className="data-table">
+                        <thead>
                             <tr>
-                                <td colSpan={4} style={{ padding: "3rem", textAlign: "center", color: "#aaa" }}>
-                                    Loading history...
-                                </td>
+                                <th>Request Date</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Notes</th>
                             </tr>
-                        ) : requests.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} style={{ padding: "3rem", textAlign: "center", color: "#aaa" }}>
-                                    No requests found.
-                                </td>
-                            </tr>
-                        ) : (
-                            requests.map((req, i) => (
-                                <tr key={req.id} style={{
-                                    borderBottom: i < requests.length - 1 ? "1px solid #f0f0f0" : "none",
-                                    transition: "background 0.1s",
-                                }}
-                                    onMouseEnter={e => e.currentTarget.style.background = "#fafaf8"}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                                >
-                                    <td style={{ padding: "14px 16px", color: "#555" }}>
-                                        {new Date(req.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ padding: "14px 16px", color: "#0f0f0f", fontWeight: 500 }}>
-                                        {req.quantity}
-                                    </td>
-                                    <td style={{ padding: "14px 16px" }}>
-                                        {getStatusBadge(req.status)}
-                                    </td>
-                                    <td style={{ padding: "14px 16px", color: "#555", maxWidth: "300px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                        {req.notes || "—"}
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={4} className="loading-state">
+                                        Loading inventory history...
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                            ) : requests.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="empty-state">
+                                        No requests found. Click the button above to request inventory.
+                                    </td>
+                                </tr>
+                            ) : (
+                                requests.map((req) => (
+                                    <tr key={req.id}>
+                                        <td className="text-muted font-medium">
+                                            {new Date(req.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td>
+                                            <span className="font-bold text-text-main">{req.quantity} Cards</span>
+                                        </td>
+                                        <td>
+                                            {getStatusBadge(req.status)}
+                                        </td>
+                                        <td className="text-muted max-w-[250px] truncate" title={req.notes}>
+                                            {req.notes || "—"}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             {/* Modal */}
             <RequestCardsModal 
