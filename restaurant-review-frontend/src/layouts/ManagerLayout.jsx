@@ -5,12 +5,13 @@ import { useTheme } from "../context/ThemeContext";
 import RestaurantSetup from "../pages/manager/RestaurantSetup";
 import axiosClient from "../api/axios";
 import {
-    LayoutDashboard, Users, LogOut, Menu, X, Sun, Moon, UtensilsCrossed
+    LayoutDashboard, Users, LogOut, Menu, X, Sun, Moon, UtensilsCrossed, CreditCard
 } from "lucide-react";
 
 const managerNav = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/manager/dashboard" },
     { label: "Servers / Staff", icon: Users, path: "/manager/servers" },
+    { label: "NFC Inventory", icon: CreditCard, path: "/manager/nfc-cards" },
 ];
 
 function ManagerLayout({ children }) {

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ServerController;
 use App\Http\Controllers\Api\NfcCardController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\NfcRequestController;
 
 Route::get('/review/{token}', [ReviewController::class, 'getServerByToken']);
 Route::post('/review', [ReviewController::class, 'store']);
@@ -18,6 +19,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Manager setup restaurant onboarding
     Route::post('/manager/setup-restaurant', [\App\Http\Controllers\Api\RestaurantController::class, 'setup']);
+
+    // Manager NFC requests
+    Route::get('/manager/nfc-requests', [NfcRequestController::class, 'index']);
+    Route::post('/manager/nfc-requests', [NfcRequestController::class, 'store']);
 
     // Dashboard stats (scoped inside controller by role)
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
