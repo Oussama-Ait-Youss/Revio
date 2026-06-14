@@ -1,38 +1,50 @@
 <?php
 
-
-
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['full_name', 'email', 'password', 'role_id', 'is_active'];
+    protected $fillable = [
+        'full_name',
+        'email',
+        'password',
+        'role_id',
+        'restaurant_id',
+        'is_active',
+    ];
 
-    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+    ];
+
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(Restaurant::class);
     }
 
     public function server(): HasOne
     {
         return $this->hasOne(Server::class);
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role && $this->role->name === Role::ADMIN;
-    }
-    public function restaurant(): BelongsTo
-    {
-        return $this->belongsTo(Restaurant::class);
     }
 }
