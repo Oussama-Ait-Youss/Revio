@@ -8,11 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Update Users Table
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('restaurant_id')->nullable()->after('id')->constrained('restaurants')->onDelete('cascade');
-            // Modify or confirm roles enum/string column in your system if needed via separate updates
-        });
+        // 1. Update Users Table (already has restaurant_id in create_users_table migration)
 
         // 2. Update Servers Table
         Schema::table('servers', function (Blueprint $table) {
@@ -35,6 +31,6 @@ return new class extends Migration
         Schema::table('reviews', function (Blueprint $table) { $table->dropForeign(['restaurant_id']); $table->dropColumn('restaurant_id'); });
         Schema::table('nfc_cards', function (Blueprint $table) { $table->dropForeign(['restaurant_id']); $table->dropColumn('restaurant_id'); });
         Schema::table('servers', function (Blueprint $table) { $table->dropForeign(['restaurant_id']); $table->dropColumn('restaurant_id'); });
-        Schema::table('users', function (Blueprint $table) { $table->dropForeign(['restaurant_id']); $table->dropColumn('restaurant_id'); });
+
     }
 };
