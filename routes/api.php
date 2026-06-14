@@ -62,5 +62,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // SERVER only routes
     Route::get('/my-reviews', [ServerController::class, 'myReviews'])->middleware('role:SERVER');
+    Route::get('/server/stats', [App\Http\Controllers\Api\ServerStatsController::class, 'getStats']);
 });
 
