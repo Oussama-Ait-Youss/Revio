@@ -18,6 +18,7 @@ class ServerController extends Controller
         $serverRole = Role::where('name', Role::SERVER)->first();
         
         $query = User::where('role_id', $serverRole->id)
+            ->with('restaurant')
             ->with(['server' => function ($query) {
                 $query->withCount('reviews')->withAvg('reviews', 'rating')->with('nfcCard');
             }]);
@@ -51,7 +52,7 @@ class ServerController extends Controller
             'nfc_card_id' => [
                 'nullable',
                 'exists:nfc_cards,id',
-                function ($attribute, $value, $fail) use ($currentUser) {
+                function ($attribute, $value, $fail) use ($currentUser, $request) {
                     $card = NfcCard::find($value);
                     if ($card && $card->server_id !== null) {
                         $fail('This NFC card is already assigned to another server.');
@@ -59,6 +60,11 @@ class ServerController extends Controller
                     if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
                         if ($card && $card->restaurant_id !== $currentUser->restaurant_id) {
                             $fail('This NFC card does not belong to your restaurant.');
+                        }
+                    }
+                    if ($currentUser->role && $currentUser->role->name === Role::ADMIN) {
+                        if ($card && (int) $card->restaurant_id !== (int) $request->input('restaurant_id')) {
+                            $fail('This NFC card does not belong to the selected restaurant.');
                         }
                     }
                 },
@@ -129,7 +135,7 @@ class ServerController extends Controller
             'nfc_card_id' => [
                 'nullable',
                 'exists:nfc_cards,id',
-                function ($attribute, $value, $fail) use ($user, $currentUser) {
+                function ($attribute, $value, $fail) use ($user, $currentUser, $request) {
                     $card = NfcCard::find($value);
                     $serverId = $user->server ? $user->server->id : null;
                     if ($card && $card->server_id !== null && $card->server_id !== $serverId) {
@@ -138,6 +144,11 @@ class ServerController extends Controller
                     if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
                         if ($card && $card->restaurant_id !== $currentUser->restaurant_id) {
                             $fail('This NFC card does not belong to your restaurant.');
+                        }
+                    }
+                    if ($currentUser->role && $currentUser->role->name === Role::ADMIN) {
+                        if ($card && (int) $card->restaurant_id !== (int) $request->input('restaurant_id')) {
+                            $fail('This NFC card does not belong to the selected restaurant.');
                         }
                     }
                 },
@@ -173,6 +184,7 @@ class ServerController extends Controller
         );
         
         $server->update([
+            'restaurant_id' => $user->restaurant_id ?? $server->restaurant_id,
             'phone' => $request->phone,
         ]);
 
