@@ -25,13 +25,25 @@ class DatabaseSeeder extends Seeder
         |--------------------------------------------------------------------------
         | 1. Seed Roles Table First (Required by users foreign key constraint)
         |--------------------------------------------------------------------------
-        | ADMIN: Platform Owner
-        | MANAGER: Restaurant Owner
-        | SERVER: Employee
+        | We create two separate restaurants to properly test data isolation.
         */
-        $adminRole   = Role::create(['name' => 'ADMIN']);
-        $managerRole = Role::create(['name' => 'MANAGER']);
-        $serverRole  = Role::create(['name' => 'SERVER']);
+        $restaurant1 = Restaurant::create([
+            'name' => 'Le Marrakchi',
+            'address' => 'Jemaa el-Fnaa, Marrakech',
+            'phone' => '0524400000',
+            'status' => 'ACTIVE'
+        ]);
+
+        $restaurant2 = Restaurant::create([
+            'name' => 'La Trattoria',
+            'address' => 'Gueliz, Marrakech',
+            'phone' => '0524432641',
+            'status' => 'ACTIVE'
+        ]);
+
+        $superAdminRole = Role::firstOrCreate(['name' => Role::ADMIN]);
+        $managerRole = Role::firstOrCreate(['name' => Role::MANAGER]);
+        $serverRole = Role::firstOrCreate(['name' => Role::SERVER]);
 
         /*
         |--------------------------------------------------------------------------
@@ -43,8 +55,8 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Platform Owner',
             'email' => 'owner@revio.me',
             'password' => bcrypt('password123'),
-            'role_id' => $adminRole->id, 
-            'restaurant_id' => null,          
+            'role_id' => $superAdminRole->id,
+            'restaurant_id' => null,
             'is_active' => true,
         ]);
 
@@ -58,29 +70,23 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Unconfigured Manager',
             'email' => 'unconfigured@manager.com',
             'password' => bcrypt('password123'),
-            'role_id' => $managerRole->id, 
-            'restaurant_id' => null,          
+            'role_id' => $managerRole->id,
+            'restaurant_id' => $restaurant1->id,
             'is_active' => true,
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | 4. Create Active Restaurant and Assigned MANAGER Account
+        | 4. Create Assigned MANAGER Account
         |--------------------------------------------------------------------------
         */
-        $restaurant = Restaurant::create([
-            'name' => 'Le Marrakchi',
-            'address' => 'Jemaa el-Fnaa, Marrakech',
-            'phone' => '0524400000',
-            'status' => 'ACTIVE'
-        ]);
 
         User::create([
             'full_name' => 'Restaurant Manager',
             'email' => 'manager@example.com',
             'password' => bcrypt('password123'),
-            'role_id' => $managerRole->id, 
-            'restaurant_id' => $restaurant->id,
+            'role_id' => $managerRole->id,
+            'restaurant_id' => $restaurant2->id,
             'is_active' => true,
         ]);
 
@@ -97,15 +103,15 @@ class DatabaseSeeder extends Seeder
                 'full_name' => "Server User {$i}",
                 'email' => "server{$i}@example.com",
                 'password' => bcrypt('password123'),
-                'role_id' => $serverRole->id, 
-                'restaurant_id' => $restaurant->id,
+                'role_id' => $serverRole->id,
+                'restaurant_id' => $restaurant1->id,
                 'is_active' => true,
             ]);
 
             // Create Server Profile
             $server = Server::create([
                 'user_id' => $user->id,
-                'restaurant_id' => $restaurant->id,
+                'restaurant_id' => $restaurant1->id,
                 'phone' => "061234567{$i}",
                 'total_reviews' => 3,
             ]);
@@ -115,7 +121,7 @@ class DatabaseSeeder extends Seeder
                 'uid' => "UID-" . strtoupper(Str::random(6)) . "-{$i}",
                 'public_token' => Str::random(32),
                 'is_active' => true,
-                'restaurant_id' => $restaurant->id,
+                'restaurant_id' => $restaurant1->id,
                 'server_id' => $server->id,
                 'assigned_at' => now(),
             ]);
@@ -123,10 +129,10 @@ class DatabaseSeeder extends Seeder
             // Create 3 reviews per server
             for ($j = 1; $j <= 3; $j++) {
                 Review::create([
-                    'restaurant_id' => $restaurant->id,
-                    'server_id'     => $server->id,
-                    'rating'        => rand(4, 5),
-                    'comment'       => "Great service by Server {$i} at Le Marrakchi!",
+                    'restaurant_id' => $restaurant1->id,
+                    'server_id' => $server->id,
+                    'rating' => rand(4, 5),
+                    'comment' => "Great service by server {$i} at {$restaurant1->name}!",
                 ]);
             }
         }

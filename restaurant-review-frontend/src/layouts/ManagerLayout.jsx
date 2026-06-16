@@ -5,12 +5,13 @@ import { useTheme } from "../context/ThemeContext";
 import RestaurantSetup from "../pages/manager/RestaurantSetup";
 import axiosClient from "../api/axios";
 import {
-    LayoutDashboard, Users, LogOut, Menu, X, Sun, Moon, UtensilsCrossed
+    LayoutDashboard, Users, LogOut, Menu, X, Sun, Moon, UtensilsCrossed, CreditCard
 } from "lucide-react";
 
 const managerNav = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/manager/dashboard" },
     { label: "Servers / Staff", icon: Users, path: "/manager/servers" },
+    { label: "NFC Inventory", icon: CreditCard, path: "/manager/nfc-cards" },
 ];
 
 function ManagerLayout({ children }) {
@@ -36,18 +37,18 @@ function ManagerLayout({ children }) {
     // Onboarding Wizard Interceptor
     if (user && user.restaurant_id === null) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
+            <div className="min-h-screen flex items-center justify-center p-4 bg-bg transition-colors duration-300">
                 {/* Theme mode toggle in top-right during onboarding setup */}
                 <div className="absolute top-6 right-6 flex items-center gap-3">
                     <button
                         onClick={toggleTheme}
-                        className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer shadow-sm transition-all"
+                        className="p-3 bg-surface border border-panel-border text-muted rounded-full hover:bg-surface-muted cursor-pointer shadow-sm transition-all"
                     >
-                        {theme === "dark" ? <Sun size={18} className="text-[#c9a96e]" /> : <Moon size={18} />}
+                        {theme === "dark" ? <Sun size={18} className="text-warning" /> : <Moon size={18} />}
                     </button>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-full text-xs font-semibold uppercase tracking-wider border border-red-100 dark:border-red-900/50 cursor-pointer transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-danger-soft hover:bg-danger hover:text-white text-danger rounded-full text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all"
                     >
                         <LogOut size={14} />
                         Logout
@@ -59,18 +60,18 @@ function ManagerLayout({ children }) {
     }
 
     return (
-        <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 font-sans transition-colors duration-300">
+        <div className="flex h-screen overflow-hidden bg-bg font-sans transition-colors duration-300">
             {/* Sidebar */}
-            <div className={`flex flex-col bg-zinc-950 text-zinc-100 border-r border-zinc-900 duration-300 shrink-0 ${sidebarOpen ? "w-64" : "w-20"}`}>
+            <div className={`flex flex-col bg-sidebar-bg text-sidebar-text border-r border-sidebar-border duration-300 shrink-0 ${sidebarOpen ? "w-64" : "w-20"}`}>
                 {/* Sidebar Header */}
-                <div className="p-5 flex items-center justify-between border-b border-zinc-900">
+                <div className="p-5 flex items-center justify-between border-b border-sidebar-border">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#c9a96e] rounded-xl flex items-center justify-center shrink-0">
-                            <UtensilsCrossed size={20} className="text-zinc-950" />
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                            <UtensilsCrossed size={20} className="text-white" />
                         </div>
                         {sidebarOpen && (
-                            <span className="font-serif font-bold text-lg tracking-wider text-white">
-                                REVIO <span className="text-xs font-sans text-[#c9a96e] block uppercase tracking-widest font-semibold">Manager</span>
+                            <span className="font-serif font-bold text-lg tracking-wider text-text-main">
+                                REVIO <span className="text-xs font-sans text-primary block uppercase tracking-widest font-semibold">Manager</span>
                             </span>
                         )}
                     </div>
@@ -86,15 +87,15 @@ function ManagerLayout({ children }) {
                                 to={path}
                                 className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group relative ${
                                     active
-                                        ? "bg-[#c9a96e]/15 text-[#c9a96e] font-semibold"
-                                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                                        ? "bg-primary-soft text-primary-dark font-semibold"
+                                        : "text-sidebar-text hover:bg-sidebar-bg-hover hover:text-sidebar-text-hover"
                                 }`}
                             >
                                 <Icon size={20} className="shrink-0" />
                                 {sidebarOpen ? (
                                     <span className="text-sm">{label}</span>
                                 ) : (
-                                    <span className="absolute left-full ml-4 px-2 py-1 bg-zinc-950 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap shadow-lg">
+                                    <span className="absolute left-full ml-4 px-2 py-1 bg-surface text-text-main text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap shadow-strong border border-line">
                                         {label}
                                     </span>
                                 )}
@@ -104,27 +105,27 @@ function ManagerLayout({ children }) {
                 </nav>
 
                 {/* Sidebar Footer */}
-                <div className="p-4 border-t border-zinc-900 space-y-2">
+                <div className="p-4 border-t border-sidebar-border space-y-2">
                     {sidebarOpen && user && (
-                        <div className="px-4 py-3 bg-zinc-900/40 rounded-2xl mb-2">
-                            <div className="text-sm font-semibold text-white truncate">{user.full_name}</div>
-                            <div className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mt-0.5">Restaurant Owner</div>
+                        <div className="px-4 py-3 bg-surface-muted border border-line rounded-2xl mb-2">
+                            <div className="text-sm font-semibold text-text-main truncate">{user.full_name}</div>
+                            <div className="text-xs text-muted uppercase tracking-widest font-semibold mt-0.5">Restaurant Owner</div>
                         </div>
                     )}
 
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center gap-4 px-4 py-3 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 rounded-2xl w-full text-left transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-4 px-4 py-3 text-sidebar-text hover:bg-sidebar-bg-hover hover:text-sidebar-text-hover rounded-2xl w-full text-left transition-all duration-200 cursor-pointer"
                     >
-                        {theme === "dark" ? <Sun size={20} className="shrink-0 text-[#c9a96e]" /> : <Moon size={20} className="shrink-0" />}
-                        {sidebarOpen && <span className="text-sm">Theme Mode</span>}
+                        {theme === "dark" ? <Sun size={20} className="shrink-0 text-warning" /> : <Moon size={20} className="shrink-0" />}
+                        {sidebarOpen && <span className="text-sm font-medium">Theme Mode</span>}
                     </button>
 
                     {/* Logout */}
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-4 px-4 py-3 text-red-400 hover:bg-red-950/20 hover:text-red-300 rounded-2xl w-full text-left transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-4 px-4 py-3 text-danger hover:bg-danger-soft hover:text-danger rounded-2xl w-full text-left transition-all duration-200 cursor-pointer"
                     >
                         <LogOut size={20} className="shrink-0" />
                         {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
@@ -135,23 +136,23 @@ function ManagerLayout({ children }) {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Header */}
-                <header className="h-20 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-8 transition-colors duration-300">
+                <header className="h-20 bg-surface border-b border-panel-border flex items-center justify-between px-8 transition-colors duration-300 shadow-sm z-10">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2.5 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer"
+                        className="p-2.5 bg-surface-muted hover:bg-primary-soft rounded-xl text-muted hover:text-primary-dark transition-all cursor-pointer"
                     >
                         {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
 
                     <div className="flex items-center gap-4">
-                        <span className="text-xs font-semibold px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-[#c9a96e] rounded-full border border-amber-100 dark:border-amber-900/30 uppercase tracking-wider">
+                        <span className="text-xs font-semibold px-3 py-1.5 bg-warning-soft text-warning rounded-full border border-warning-soft uppercase tracking-wider">
                             Venue Manager
                         </span>
                     </div>
                 </header>
 
                 {/* Content */}
-                <main className="flex-1 overflow-auto bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
+                <main className="flex-1 overflow-auto bg-bg transition-colors duration-300">
                     {children}
                 </main>
             </div>

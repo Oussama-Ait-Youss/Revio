@@ -27,5 +27,15 @@ class NfcCard extends Model
     {
         return $this->belongsTo(Server::class);
     }
+
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
+
+    public function scopeUnallocated($query)
+    {
+        return $query->whereNull('restaurant_id');
+    }
 }
 
