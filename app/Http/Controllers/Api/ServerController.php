@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\NfcCard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class ServerController extends Controller
@@ -52,14 +53,17 @@ class ServerController extends Controller
                 'nullable',
                 'exists:nfc_cards,id',
                 function ($attribute, $value, $fail) use ($currentUser) {
-                    $card = NfcCard::find($value);
+                    $cardQuery = NfcCard::query();
+                    if ($currentUser->role?->name === Role::MANAGER) {
+                        $cardQuery->where('restaurant_id', $currentUser->restaurant_id);
+                    }
+                    $card = $cardQuery->find($value);
+                    if (!$card) {
+                        $fail('This NFC card is not available to your restaurant.');
+                        return;
+                    }
                     if ($card && $card->server_id !== null) {
                         $fail('This NFC card is already assigned to another server.');
-                    }
-                    if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
-                        if ($card && $card->restaurant_id !== $currentUser->restaurant_id) {
-                            $fail('This NFC card does not belong to your restaurant.');
-                        }
                     }
                 },
             ]
@@ -82,29 +86,37 @@ class ServerController extends Controller
 
         $serverRole = Role::where('name', Role::SERVER)->first();
 
-        $user = User::create([
-            'full_name' => $data['full_name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role_id' => $serverRole->id,
-            'restaurant_id' => $restaurantId,
-            'is_active' => true,
-        ]);
-
-        $server = Server::create([
-            'user_id' => $user->id,
-            'restaurant_id' => $restaurantId,
-            'phone' => $data['phone'] ?? null,
-            'total_reviews' => 0,
-        ]);
-
-        if (!empty($data['nfc_card_id'])) {
-            $card = NfcCard::find($data['nfc_card_id']);
-            $card->update([
-                'server_id' => $server->id,
-                'assigned_at' => now(),
+        $user = DB::transaction(function () use ($data, $serverRole, $restaurantId) {
+            $user = User::create([
+                'full_name' => $data['full_name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role_id' => $serverRole->id,
+                'restaurant_id' => $restaurantId,
+                'is_active' => true,
             ]);
-        }
+
+            $server = Server::create([
+                'user_id' => $user->id,
+                'restaurant_id' => $restaurantId,
+                'phone' => $data['phone'] ?? null,
+                'total_reviews' => 0,
+            ]);
+
+            if (!empty($data['nfc_card_id'])) {
+                NfcCard::where('restaurant_id', $restaurantId)
+                    ->whereNull('server_id')
+                    ->whereKey($data['nfc_card_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail()
+                    ->update([
+                        'server_id' => $server->id,
+                        'assigned_at' => now(),
+                    ]);
+            }
+
+            return $user;
+        });
 
         return response()->json($user->load('server.nfcCard'), 201);
     }
@@ -112,14 +124,12 @@ class ServerController extends Controller
     // UPDATE server
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
         $currentUser = $request->user();
-
-        if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
-            if ($user->restaurant_id !== $currentUser->restaurant_id) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
-            }
+        $userQuery = User::whereHas('role', fn ($query) => $query->where('name', Role::SERVER));
+        if ($currentUser->role?->name === Role::MANAGER) {
+            $userQuery->where('restaurant_id', $currentUser->restaurant_id);
         }
+        $user = $userQuery->findOrFail($id);
 
         $validationRules = [
             'full_name' => 'required|string|max:255',
@@ -130,15 +140,18 @@ class ServerController extends Controller
                 'nullable',
                 'exists:nfc_cards,id',
                 function ($attribute, $value, $fail) use ($user, $currentUser) {
-                    $card = NfcCard::find($value);
+                    $cardQuery = NfcCard::query();
+                    if ($currentUser->role?->name === Role::MANAGER) {
+                        $cardQuery->where('restaurant_id', $currentUser->restaurant_id);
+                    }
+                    $card = $cardQuery->find($value);
+                    if (!$card) {
+                        $fail('This NFC card is not available to your restaurant.');
+                        return;
+                    }
                     $serverId = $user->server ? $user->server->id : null;
                     if ($card && $card->server_id !== null && $card->server_id !== $serverId) {
                         $fail('This NFC card is already assigned to another server.');
-                    }
-                    if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
-                        if ($card && $card->restaurant_id !== $currentUser->restaurant_id) {
-                            $fail('This NFC card does not belong to your restaurant.');
-                        }
                     }
                 },
             ]
@@ -183,7 +196,11 @@ class ServerController extends Controller
             }
             // Assign new card
             if ($request->nfc_card_id) {
-                $card = NfcCard::find($request->nfc_card_id);
+                $cardQuery = NfcCard::query();
+                if ($currentUser->role?->name === Role::MANAGER) {
+                    $cardQuery->where('restaurant_id', $currentUser->restaurant_id);
+                }
+                $card = $cardQuery->findOrFail($request->nfc_card_id);
                 $card->update([
                     'server_id' => $server->id,
                     'assigned_at' => now(),
@@ -199,14 +216,12 @@ class ServerController extends Controller
     // DELETE server
     public function destroy(Request $request, $id)
     {
-        $user = User::findOrFail($id);
         $currentUser = $request->user();
-
-        if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
-            if ($user->restaurant_id !== $currentUser->restaurant_id) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
-            }
+        $userQuery = User::whereHas('role', fn ($query) => $query->where('name', Role::SERVER));
+        if ($currentUser->role?->name === Role::MANAGER) {
+            $userQuery->where('restaurant_id', $currentUser->restaurant_id);
         }
+        $user = $userQuery->findOrFail($id);
 
         if ($user->server && $user->server->nfcCard) {
             $user->server->nfcCard->update(['server_id' => null, 'assigned_at' => null]);
@@ -222,16 +237,14 @@ class ServerController extends Controller
     // GET single server
     public function show(Request $request, $id)
     {
-        $user = User::with(['server' => function ($query) {
-            $query->withCount('reviews')->withAvg('reviews', 'rating')->with('nfcCard');
-        }])->findOrFail($id);
-
         $currentUser = $request->user();
-        if ($currentUser->role && $currentUser->role->name === Role::MANAGER) {
-            if ($user->restaurant_id !== $currentUser->restaurant_id) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
-            }
+        $userQuery = User::with(['server' => function ($query) {
+            $query->withCount('reviews')->withAvg('reviews', 'rating')->with('nfcCard');
+        }])->whereHas('role', fn ($query) => $query->where('name', Role::SERVER));
+        if ($currentUser->role?->name === Role::MANAGER) {
+            $userQuery->where('restaurant_id', $currentUser->restaurant_id);
         }
+        $user = $userQuery->findOrFail($id);
 
         return response()->json($user);
     }

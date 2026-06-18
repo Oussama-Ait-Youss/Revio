@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-
+use App\Models\Concerns\BelongsToRestaurantTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NfcCard extends Model
 {
+    use BelongsToRestaurantTenant;
     protected $table = 'nfc_cards';
 
     protected $fillable = [
@@ -38,4 +39,3 @@ class NfcCard extends Model
         return $query->whereNull('restaurant_id');
     }
 }
-

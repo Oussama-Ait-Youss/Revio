@@ -1,5 +1,104 @@
 # Revio
 
+## Run Locally
+
+### Requirements
+
+- PHP 8.3 or newer
+- Composer
+- Node.js and npm
+- SQLite for the default local setup, or MySQL if you change the database settings in `.env`
+
+### Backend setup
+
+Run these commands from the project root:
+
+```powershell
+composer install
+Copy-Item .env.example .env
+New-Item -ItemType File -Force database/database.sqlite
+php artisan key:generate
+php artisan migrate --seed
+```
+
+Start the Laravel API:
+
+```powershell
+php artisan serve
+```
+
+The API runs at:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+### Frontend setup
+
+Open a second terminal and run:
+
+```powershell
+cd restaurant-review-frontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
+
+The React app runs at:
+
+```text
+http://127.0.0.1:5173
+```
+
+### Demo logins
+
+After running `php artisan migrate --seed`, you can log in with:
+
+```text
+Admin:   owner@revio.me / password123
+Manager: manager@example.com / password123
+Server:  server1@example.com / password123
+```
+
+### Optional Laravel Vite app
+
+The repository also includes Laravel's default Vite setup in the project root. If you need to work on `resources/js/app.js` or `resources/css/app.css`, run this in another terminal:
+
+```powershell
+npm install
+npm run dev
+```
+
+For the main Revio React dashboard, use the separate frontend inside `restaurant-review-frontend`.
+
+### Useful commands
+
+```powershell
+php artisan test
+php artisan migrate:fresh --seed
+php artisan queue:listen --tries=1 --timeout=0
+cd restaurant-review-frontend
+npm run build
+npm run preview
+```
+
+### Important files
+
+```text
+.env.example                              Backend environment template
+composer.json                             Laravel dependencies and scripts
+routes/api.php                            API routes
+app/Http/Controllers/Api                  Backend API controllers
+app/Models                                Laravel models
+database/migrations                       Database schema
+database/seeders/DatabaseSeeder.php       Seed data
+restaurant-review-frontend/.env.example  Frontend API URL template
+restaurant-review-frontend/package.json   Frontend scripts and dependencies
+restaurant-review-frontend/src/api        Axios API client
+restaurant-review-frontend/src/pages      React pages
+restaurant-review-frontend/src/routes     React routes
+```
+
 
 ## Overview
 

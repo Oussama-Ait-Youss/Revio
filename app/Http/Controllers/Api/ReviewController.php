@@ -21,6 +21,15 @@ class ReviewController extends Controller
         }
 
         if ($request->filled('server_id')) {
+            if (
+                $user?->role?->name === \App\Models\Role::MANAGER
+                && !Server::where('restaurant_id', $user->restaurant_id)
+                    ->whereKey($request->server_id)
+                    ->exists()
+            ) {
+                return response()->json(['message' => 'Server not found.'], 404);
+            }
+
             $query->where('server_id', $request->server_id);
         }
 

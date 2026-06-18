@@ -7,6 +7,7 @@ use App\Models\Restaurant;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class RestaurantController extends Controller
@@ -75,6 +76,7 @@ class RestaurantController extends Controller
                 'name' => $restaurant->name,
                 'address' => $restaurant->address,
                 'phone' => $restaurant->phone,
+                'logo' => $restaurant->logo,
                 'status' => $restaurant->status,
                 'manager' => $restaurant->manager ? [
                     'id' => $restaurant->manager->id,
@@ -138,19 +140,50 @@ class RestaurantController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
             'phone' => 'required|string|max:50',
+            'logo' => 'nullable|image|max:2048',
+            'manager_full_name' => 'required|string|max:255',
+            'manager_email' => 'required|email|unique:users,email',
+            'manager_password' => 'required|string|min:8',
         ]);
 
-        $restaurant = Restaurant::create([
-            'name' => $request->name,
-            'address' => $request->address,
-            'phone' => $request->phone,
-            'status' => 'ACTIVE',
-        ]);
+        $logoPath = $request->file('logo')?->store('restaurant-logos', 'public');
+        $managerRole = Role::where('name', Role::MANAGER)->firstOrFail();
 
-        return response()->json($restaurant, 201);
+        $result = DB::transaction(function () use ($data, $logoPath, $managerRole) {
+            $restaurant = Restaurant::create([
+                'name' => $data['name'],
+                'address' => $data['address'],
+                'phone' => $data['phone'],
+                'logo' => $logoPath,
+                'status' => 'ACTIVE',
+            ]);
+
+            $manager = User::create([
+                'full_name' => $data['manager_full_name'],
+                'email' => $data['manager_email'],
+                'password' => Hash::make($data['manager_password']),
+                'role_id' => $managerRole->id,
+                'restaurant_id' => $restaurant->id,
+                'is_active' => true,
+            ]);
+
+            return compact('restaurant', 'manager');
+        });
+
+        return response()->json([
+            'message' => 'Restaurant and manager account created successfully.',
+            'data' => [
+                ...$result['restaurant']->toArray(),
+                'manager' => [
+                    'id' => $result['manager']->id,
+                    'full_name' => $result['manager']->full_name,
+                    'email' => $result['manager']->email,
+                ],
+            ],
+        ], 201);
     }
 }

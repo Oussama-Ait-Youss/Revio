@@ -19,7 +19,7 @@ function ManagerLayout({ children }) {
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 900);
 
     const handleLogout = async () => {
         try {
@@ -60,9 +60,10 @@ function ManagerLayout({ children }) {
     }
 
     return (
-        <div className="flex h-screen overflow-hidden bg-bg font-sans transition-colors duration-300">
+        <div className="management-shell">
+            {sidebarOpen && <button className="management-backdrop" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} />}
             {/* Sidebar */}
-            <div className={`flex flex-col bg-sidebar-bg text-sidebar-text border-r border-sidebar-border duration-300 shrink-0 ${sidebarOpen ? "w-64" : "w-20"}`}>
+            <aside className={`management-sidebar ${sidebarOpen ? "is-open" : "is-collapsed"}`}>
                 {/* Sidebar Header */}
                 <div className="p-5 flex items-center justify-between border-b border-sidebar-border">
                     <div className="flex items-center gap-3">
@@ -85,6 +86,7 @@ function ManagerLayout({ children }) {
                             <Link
                                 key={path}
                                 to={path}
+                                onClick={() => window.innerWidth <= 900 && setSidebarOpen(false)}
                                 className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group relative ${
                                     active
                                         ? "bg-primary-soft text-primary-dark font-semibold"
@@ -131,12 +133,12 @@ function ManagerLayout({ children }) {
                         {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
                     </button>
                 </div>
-            </div>
+            </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="management-content">
                 {/* Header */}
-                <header className="h-20 bg-surface border-b border-panel-border flex items-center justify-between px-8 transition-colors duration-300 shadow-sm z-10">
+                <header className="management-header">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className="p-2.5 bg-surface-muted hover:bg-primary-soft rounded-xl text-muted hover:text-primary-dark transition-all cursor-pointer"

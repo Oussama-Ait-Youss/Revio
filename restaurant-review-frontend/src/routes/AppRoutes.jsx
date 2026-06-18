@@ -5,6 +5,7 @@ import ProtectedRoute from "../guards/ProtectedRoute";
 
 import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
+import ServerLayout from "../layouts/ServerLayout";
 
 import Login from "../pages/auth/Login";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -109,7 +110,9 @@ function AppRoutes() {
                         <Route path="/server/dashboard" element={
                             <ProtectedRoute>
                                 <RoleGuard allowedRoles={["SERVER"]}>
-                                    <ServerDashboard />
+                                    <ServerLayout>
+                                        <ServerDashboard />
+                                    </ServerLayout>
                                 </RoleGuard>
                             </ProtectedRoute>
                         } />

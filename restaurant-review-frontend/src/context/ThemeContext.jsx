@@ -1,23 +1,19 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useLayoutEffect, useState } from "react";
 
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
     const [theme, setTheme] = useState(() => {
         const saved = localStorage.getItem("theme");
-        if (saved) return saved;
-        // check system preference
+        if (saved === "dark" || saved === "light") return saved;
         const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         return systemPrefersDark ? "dark" : "light";
     });
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === "dark") {
-            root.classList.add("dark");
-        } else {
-            root.classList.remove("dark");
-        }
+    useLayoutEffect(() => {
+        const root = document.documentElement;
+        root.classList.toggle("dark", theme === "dark");
+        root.dataset.theme = theme;
         localStorage.setItem("theme", theme);
     }, [theme]);
 
