@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Role;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Concerns\BelongsToRestaurantTenant;
 
 class Restaurant extends Model
 {
+    use BelongsToRestaurantTenant;
     /**
      * The attributes that are mass assignable.
      *

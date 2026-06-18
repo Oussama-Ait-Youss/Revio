@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Review;
+use App\Models\Restaurant;
 use App\Models\Role;
 use App\Models\Server;
 use App\Models\User;
@@ -18,6 +19,11 @@ class ServerDashboardTest extends TestCase
     {
         // 1. Create Server role
         $serverRole = Role::create(['name' => Role::SERVER]);
+        $restaurant = Restaurant::create([
+            'name' => 'Test Restaurant',
+            'address' => 'Test Address',
+            'phone' => '1234567890',
+        ]);
 
         // 2. Create User with Server role
         $user = User::create([
@@ -25,20 +31,22 @@ class ServerDashboardTest extends TestCase
             'email' => 'john@example.com',
             'password' => bcrypt('password123'),
             'role_id' => $serverRole->id,
+            'restaurant_id' => $restaurant->id,
             'is_active' => true,
         ]);
 
         // 3. Create Server profile
         $server = Server::create([
             'user_id' => $user->id,
+            'restaurant_id' => $restaurant->id,
             'phone' => '1234567890',
             'total_reviews' => 0, // initially 0
         ]);
 
         // 4. Create 3 reviews for the server
-        Review::create(['server_id' => $server->id, 'rating' => 5, 'comment' => 'Excellent service!']);
-        Review::create(['server_id' => $server->id, 'rating' => 4, 'comment' => 'Very good.']);
-        Review::create(['server_id' => $server->id, 'rating' => 2, 'comment' => 'Slow service.']);
+        Review::create(['restaurant_id' => $restaurant->id, 'server_id' => $server->id, 'rating' => 5, 'comment' => 'Excellent service!']);
+        Review::create(['restaurant_id' => $restaurant->id, 'server_id' => $server->id, 'rating' => 4, 'comment' => 'Very good.']);
+        Review::create(['restaurant_id' => $restaurant->id, 'server_id' => $server->id, 'rating' => 2, 'comment' => 'Slow service.']);
 
         // 5. Authenticate user
         Sanctum::actingAs($user);

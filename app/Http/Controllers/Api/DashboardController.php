@@ -42,8 +42,8 @@ class DashboardController extends Controller
             }
 
             // 1. Total servers under this restaurant
-            $totalServers = User::where('role_id', $serverRole->id)
-                ->where('restaurant_id', $restaurantId)
+            $totalServers = User::where('restaurant_id', $restaurantId)
+                ->where('role_id', $serverRole->id)
                 ->count();
 
             // 2. Total reviews under this restaurant
@@ -54,9 +54,10 @@ class DashboardController extends Controller
             $assignedNfcCards = NfcCard::where('restaurant_id', $restaurantId)->whereNotNull('server_id')->count();
 
             // 4. Reviews per server for the graph
-            $servers = User::where('role_id', $serverRole->id)
-                ->where('restaurant_id', $restaurantId)
-                ->with('server.reviews')
+            $servers = User::where('restaurant_id', $restaurantId)
+                ->where('role_id', $serverRole->id)
+                ->with(['server.reviews' => fn ($query) => $query
+                    ->where('restaurant_id', $restaurantId)])
                 ->get();
 
             $reviewsPerServer = $servers->map(function ($user) {

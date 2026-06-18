@@ -1,37 +1,46 @@
-import { useState, useEffect } from "react";
-import { Plus, Users, Star, MapPin, Phone, Mail, X, Loader2, Store, UserCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+    Building2,
+    ImagePlus,
+    Loader2,
+    Mail,
+    MapPin,
+    Phone,
+    Plus,
+    Star,
+    Users,
+} from "lucide-react";
 import axiosClient from "../../api/axios";
 import PortalModal from "../../components/modals/PortalModal";
+
+const emptyForm = {
+    name: "",
+    address: "",
+    phone: "",
+    logo: null,
+    manager_full_name: "",
+    manager_email: "",
+    manager_password: "",
+};
+const apiOrigin = (axiosClient.defaults.baseURL || window.location.origin).replace(/\/api\/?$/, "");
+
 function RestaurantList() {
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // Modals visibility
-    const [showManagerModal, setShowManagerModal] = useState(false);
-    const [showRestaurantModal, setShowRestaurantModal] = useState(false);
-    
-    // Target restaurant for manager assignment
-    const [selectedRestaurantId, setSelectedRestaurantId] = useState("");
-
-    // Form inputs
-    const [restFormData, setRestFormData] = useState({ name: "", address: "", phone: "" });
-    const [managerFormData, setManagerFormData] = useState({ full_name: "", email: "", password: "" });
-    const [formLoading, setFormLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [form, setForm] = useState(emptyForm);
     const [formError, setFormError] = useState("");
+    const [saving, setSaving] = useState(false);
 
     const fetchRestaurants = async () => {
         setLoading(true);
-        setError(null);
+        setError("");
         try {
-            const token = localStorage.getItem("token");
-            const response = await axiosClient.get("/admin/restaurants", {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axiosClient.get("/admin/restaurants");
             setRestaurants(response.data.data || []);
-        } catch (err) {
-            console.error(err);
-            setError("Failed to fetch restaurants.");
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to load restaurants.");
         } finally {
             setLoading(false);
         }
@@ -41,324 +50,183 @@ function RestaurantList() {
         fetchRestaurants();
     }, []);
 
-    const handleRestSubmit = async (e) => {
-        e.preventDefault();
-        setFormLoading(true);
-        setFormError("");
-        try {
-            const token = localStorage.getItem("token");
-            await axiosClient.post("/admin/restaurants", restFormData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setShowRestaurantModal(false);
-            setRestFormData({ name: "", address: "", phone: "" });
-            fetchRestaurants();
-        } catch (err) {
-            console.error(err);
-            setFormError(err.response?.data?.message || "Failed to create restaurant.");
-        } finally {
-            setFormLoading(false);
-        }
+    const updateField = (event) => {
+        const { name, value, files } = event.target;
+        setForm((current) => ({
+            ...current,
+            [name]: files ? files[0] || null : value,
+        }));
     };
 
-    const handleManagerSubmit = async (e) => {
-        e.preventDefault();
-        if (!selectedRestaurantId) {
-            setFormError("Please select a restaurant venue.");
-            return;
-        }
-
-        setFormLoading(true);
+    const closeModal = () => {
+        setShowCreateModal(false);
+        setForm(emptyForm);
         setFormError("");
-        try {
-            const token = localStorage.getItem("token");
-            await axiosClient.post("/admin/managers", {
-                ...managerFormData,
-                restaurant_id: selectedRestaurantId
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setShowManagerModal(false);
-            setManagerFormData({ full_name: "", email: "", password: "" });
-            setSelectedRestaurantId("");
-            fetchRestaurants();
-        } catch (err) {
-            console.error(err);
-            setFormError(err.response?.data?.message || "Failed to register manager.");
-        } finally {
-            setFormLoading(false);
-        }
     };
 
-    const getRestaurantsWithoutManager = () => {
-        return restaurants.filter(r => !r.manager);
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setSaving(true);
+        setFormError("");
+
+        try {
+            const payload = new FormData();
+            Object.entries(form).forEach(([key, value]) => {
+                if (value !== null && value !== "") payload.append(key, value);
+            });
+
+            await axiosClient.post("/admin/restaurants", payload, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            closeModal();
+            await fetchRestaurants();
+        } catch (requestError) {
+            const errors = requestError.response?.data?.errors;
+            setFormError(
+                errors ? Object.values(errors).flat()[0] : requestError.response?.data?.message || "Unable to create restaurant."
+            );
+        } finally {
+            setSaving(false);
+        }
     };
 
     if (loading) {
         return (
             <div className="loading-state">
-                <Loader2 size={36} className="animate-spin text-primary mx-auto mb-4" />
-                <span>Loading restaurants...</span>
+                <Loader2 size={34} className="animate-spin text-primary mx-auto mb-4" />
+                Loading restaurants...
             </div>
         );
     }
 
     return (
-        <div className="page space-y-8">
-            {/* Header */}
+        <div className="page space-y-6">
             <div className="page-header">
                 <div className="page-title">
-                    <h1>Restaurant Directory</h1>
-                    <p>Register new venues and assign dedicated restaurant manager accounts.</p>
+                    <h1>Restaurant Management Board</h1>
+                    <p>Create restaurant profiles and their pre-linked manager accounts in one secure step.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => setShowRestaurantModal(true)} className="button secondary">
-                        <Plus size={18} /> Add Venue
-                    </button>
-                    <button onClick={() => {
-                            const withoutManager = getRestaurantsWithoutManager();
-                            if (withoutManager.length > 0) {
-                                setSelectedRestaurantId(withoutManager[0].id);
-                            }
-                            setShowManagerModal(true);
-                        }} 
-                        className="button"
-                    >
-                        <UserCheck size={18} /> Register Venue Manager
-                    </button>
-                </div>
+                <button className="button" type="button" onClick={() => setShowCreateModal(true)}>
+                    <Plus size={18} /> New restaurant
+                </button>
             </div>
 
             {error && <div className="alert">{error}</div>}
 
-            {/* Table Wrapper Card */}
-            <div className="table-wrap">
+            <div className="table-wrap responsive-table">
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>Restaurant Info</th>
-                            <th>Contact Details</th>
-                            <th>Manager Email</th>
-                            <th className="text-center">Servers</th>
-                            <th className="text-center">Reviews</th>
+                            <th>Restaurant</th>
+                            <th>Contact</th>
+                            <th>Manager</th>
+                            <th>Servers</th>
+                            <th>Reviews</th>
                             <th>Status</th>
-                            <th className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {restaurants.length === 0 ? (
-                            <tr>
-                                <td colSpan="7" className="empty-state">
-                                    No restaurant venues registered.
+                            <tr><td colSpan={6} className="empty-state">No restaurants have been created yet.</td></tr>
+                        ) : restaurants.map((restaurant) => (
+                            <tr key={restaurant.id}>
+                                <td data-label="Restaurant">
+                                    <div className="identity">
+                                        <div className="restaurant-logo">
+                                            {restaurant.logo ? (
+                                                <img
+                                                    src={`${apiOrigin}/storage/${restaurant.logo}`}
+                                                    alt=""
+                                                />
+                                            ) : restaurant.name.slice(0, 2).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <strong>{restaurant.name}</strong>
+                                            <div className="muted text-xs flex items-center gap-1 mt-1">
+                                                <MapPin size={12} /> {restaurant.address}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Contact">
+                                    <span className="muted flex items-center gap-2"><Phone size={14} /> {restaurant.phone}</span>
+                                </td>
+                                <td data-label="Manager">
+                                    {restaurant.manager ? (
+                                        <div>
+                                            <strong>{restaurant.manager.full_name}</strong>
+                                            <span className="muted text-xs flex items-center gap-1 mt-1">
+                                                <Mail size={12} /> {restaurant.manager.email}
+                                            </span>
+                                        </div>
+                                    ) : <span className="status-pill inactive">Not assigned</span>}
+                                </td>
+                                <td data-label="Servers"><span className="code-pill"><Users size={13} /> {restaurant.servers_count}</span></td>
+                                <td data-label="Reviews"><span className="code-pill"><Star size={13} /> {restaurant.reviews_count}</span></td>
+                                <td data-label="Status">
+                                    <span className={`status-pill ${restaurant.status === "ACTIVE" ? "active" : "inactive"}`}>
+                                        {restaurant.status}
+                                    </span>
                                 </td>
                             </tr>
-                        ) : (
-                            restaurants.map((rest) => (
-                                <tr key={rest.id}>
-                                    <td>
-                                        <div className="flex items-center gap-3">
-                                            <div className="icon-tile border border-line" style={{ width: 40, height: 40 }}>
-                                                {rest.name.slice(0, 2).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <div className="font-bold text-text-main text-sm">{rest.name}</div>
-                                                <div className="text-xs text-muted mt-1 flex items-center gap-1">
-                                                    <MapPin size={12} />
-                                                    {rest.address}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="text-sm text-muted">
-                                        <div className="flex items-center gap-1.5">
-                                            <Phone size={14} className="shrink-0" />
-                                            {rest.phone}
-                                        </div>
-                                    </td>
-                                    <td className="text-sm text-muted">
-                                        {rest.manager ? (
-                                            <div className="space-y-0.5">
-                                                <div className="font-semibold text-text-main">{rest.manager.full_name}</div>
-                                                <div className="text-xs flex items-center gap-1 mt-0.5">
-                                                    <Mail size={12} className="shrink-0" />
-                                                    {rest.manager.email}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <span className="rating-pill neutral">
-                                                No Manager Assigned
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="text-center">
-                                        <span className="code-pill">
-                                            <Users size={12} className="text-muted" />
-                                            {rest.servers_count}
-                                        </span>
-                                    </td>
-                                    <td className="text-center">
-                                        <span className="code-pill">
-                                            <Star size={12} className="text-warning fill-warning" />
-                                            {rest.reviews_count}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`status-pill ${rest.status === "ACTIVE" ? "active" : "inactive"}`}>
-                                            {rest.status}
-                                        </span>
-                                    </td>
-                                    <td className="text-right">
-                                        <div className="actions justify-end">
-                                            {!rest.manager && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedRestaurantId(rest.id);
-                                                        setShowManagerModal(true);
-                                                    }}
-                                                    className="button secondary" style={{ minHeight: 32, padding: '0 12px', fontSize: '0.8rem' }}
-                                                >
-                                                    Link Manager
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => alert(`Suspending ${rest.name}`)}
-                                                className="button danger" style={{ minHeight: 32, padding: '0 12px', fontSize: '0.8rem' }}
-                                            >
-                                                Suspend
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
+                        ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Creation Modal (Add Restaurant) */}
-            {showRestaurantModal && (
-                <PortalModal 
-                    title="Register Restaurant Venue" 
-                    icon={Store} 
-                    onClose={() => { setShowRestaurantModal(false); setFormError(""); }}
-                >
-                    {formError && <div className="alert">{formError}</div>}
-
-                    <form onSubmit={handleRestSubmit} className="space-y-4">
-                        <div className="field">
-                            <label>Restaurant Name</label>
-                            <input
-                                type="text"
-                                required
-                                placeholder="e.g. La Trattoria"
-                                value={restFormData.name}
-                                onChange={(e) => setRestFormData({ ...restFormData, name: e.target.value })}
-                                className="input"
-                            />
-                        </div>
-
-                        <div className="field">
-                            <label>Address</label>
-                            <input
-                                type="text"
-                                required
-                                placeholder="e.g. Gueliz, Marrakech"
-                                value={restFormData.address}
-                                onChange={(e) => setRestFormData({ ...restFormData, address: e.target.value })}
-                                className="input"
-                            />
-                        </div>
-
-                        <div className="field">
-                            <label>Phone Number</label>
-                            <input
-                                type="text"
-                                required
-                                placeholder="e.g. 0524430000"
-                                value={restFormData.phone}
-                                onChange={(e) => setRestFormData({ ...restFormData, phone: e.target.value })}
-                                className="input"
-                            />
-                        </div>
-
-                        <div className="form-actions mt-6">
-                            <button type="submit" disabled={formLoading} className="button full">
-                                {formLoading ? <Loader2 size={16} className="animate-spin" /> : "Save Venue"}
-                            </button>
-                        </div>
-                    </form>
-                </PortalModal>
-            )}
-
-            {/* Creation Modal (Add Manager) */}
-            {showManagerModal && (
-                <PortalModal 
-                    title="Register Venue Manager" 
-                    icon={UserCheck} 
-                    onClose={() => { setShowManagerModal(false); setFormError(""); }}
-                >
-                    <p className="muted mb-6" style={{ fontSize: '0.85rem' }}>
-                        Create manager credentials and assign them to an active restaurant venue.
+            {showCreateModal && (
+                <PortalModal title="Create restaurant profile" icon={Building2} onClose={closeModal}>
+                    <p className="muted modal-intro">
+                        The manager account is created in the same transaction and linked to the new restaurant automatically.
                     </p>
-
                     {formError && <div className="alert">{formError}</div>}
 
-                    <form onSubmit={handleManagerSubmit} className="space-y-4">
-                        <div className="field">
-                            <label>Target Restaurant Venue</label>
-                            <select
-                                value={selectedRestaurantId}
-                                onChange={(e) => setSelectedRestaurantId(e.target.value)}
-                                className="select"
-                            >
-                                <option value="" disabled>Select Restaurant</option>
-                                {restaurants.map(r => (
-                                    <option key={r.id} value={r.id}>
-                                        {r.name} {r.manager ? "(Has Manager)" : ""}
-                                    </option>
-                                ))}
-                            </select>
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-section-title">Restaurant details</div>
+                        <div className="form-grid">
+                            <div className="field">
+                                <label htmlFor="restaurant-name">Name</label>
+                                <input id="restaurant-name" className="input" name="name" value={form.name} onChange={updateField} required />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="restaurant-phone">Phone</label>
+                                <input id="restaurant-phone" className="input" name="phone" value={form.phone} onChange={updateField} required />
+                            </div>
+                            <div className="field form-grid-full">
+                                <label htmlFor="restaurant-address">Address</label>
+                                <input id="restaurant-address" className="input" name="address" value={form.address} onChange={updateField} required />
+                            </div>
+                            <div className="field form-grid-full">
+                                <label htmlFor="restaurant-logo">Logo <span className="muted">(optional, max 2 MB)</span></label>
+                                <label className="file-picker" htmlFor="restaurant-logo">
+                                    <ImagePlus size={18} />
+                                    <span>{form.logo?.name || "Choose an image"}</span>
+                                </label>
+                                <input id="restaurant-logo" className="sr-only" type="file" name="logo" accept="image/*" onChange={updateField} />
+                            </div>
                         </div>
 
-                        <div className="field">
-                            <label>Manager Full Name</label>
-                            <input
-                                type="text"
-                                required
-                                placeholder="e.g. Jean Dupont"
-                                value={managerFormData.full_name}
-                                onChange={(e) => setManagerFormData({ ...managerFormData, full_name: e.target.value })}
-                                className="input"
-                            />
+                        <div className="form-section-title">Manager account</div>
+                        <div className="form-grid">
+                            <div className="field">
+                                <label htmlFor="manager-name">Full name</label>
+                                <input id="manager-name" className="input" name="manager_full_name" value={form.manager_full_name} onChange={updateField} required />
+                            </div>
+                            <div className="field">
+                                <label htmlFor="manager-email">Email</label>
+                                <input id="manager-email" className="input" type="email" name="manager_email" value={form.manager_email} onChange={updateField} required />
+                            </div>
+                            <div className="field form-grid-full">
+                                <label htmlFor="manager-password">Temporary password</label>
+                                <input id="manager-password" className="input" type="password" minLength={8} name="manager_password" value={form.manager_password} onChange={updateField} required />
+                            </div>
                         </div>
 
-                        <div className="field">
-                            <label>Email Address</label>
-                            <input
-                                type="email"
-                                required
-                                placeholder="manager@example.com"
-                                value={managerFormData.email}
-                                onChange={(e) => setManagerFormData({ ...managerFormData, email: e.target.value })}
-                                className="input"
-                            />
-                        </div>
-
-                        <div className="field">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                required
-                                placeholder="••••••••"
-                                value={managerFormData.password}
-                                onChange={(e) => setManagerFormData({ ...managerFormData, password: e.target.value })}
-                                className="input"
-                            />
-                        </div>
-
-                        <div className="form-actions mt-6">
-                            <button type="submit" disabled={formLoading} className="button full">
-                                {formLoading ? <Loader2 size={16} className="animate-spin" /> : "Create Manager Profile"}
+                        <div className="form-actions">
+                            <button className="button secondary" type="button" onClick={closeModal}>Cancel</button>
+                            <button className="button" type="submit" disabled={saving}>
+                                {saving ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} />}
+                                Create restaurant & manager
                             </button>
                         </div>
                     </form>

@@ -42,6 +42,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'full_name' => $user->full_name,
                 'role' => $user->role?->name,
+                'restaurant_id' => $user->restaurant_id,
             ]
         ]);
     }
@@ -67,4 +68,3 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 }
-

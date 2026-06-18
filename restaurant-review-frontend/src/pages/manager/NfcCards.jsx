@@ -1,36 +1,34 @@
-import { useState, useEffect } from "react";
-import { Plus, CreditCard, Package, Clock, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Clock, CreditCard, Loader2, Package, Plus, ShieldAlert, UserRound } from "lucide-react";
 import axiosClient from "../../api/axios";
 import RequestCardsModal from "../../components/modals/RequestCardsModal";
 
 export default function NfcCards() {
     const [requests, setRequests] = useState([]);
-    const [metrics, setMetrics] = useState({
-        total_active: 0,
-        available_inventory: 0,
-        pending_requests: 0
-    });
+    const [cards, setCards] = useState([]);
+    const [servers, setServers] = useState([]);
+    const [metrics, setMetrics] = useState({ total_active: 0, available_inventory: 0, pending_requests: 0 });
+    const [selection, setSelection] = useState({});
+    const [assigning, setAssigning] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
-        setError(null);
+        setError("");
         try {
-            const token = localStorage.getItem('token');
-            const res = await axiosClient.get("/manager/nfc-requests", {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setRequests(res.data.requests || []);
-            setMetrics(res.data.metrics || {
-                total_active: 0,
-                available_inventory: 0,
-                pending_requests: 0
-            });
-        } catch (e) {
-            console.error("Failed to fetch NFC data", e);
-            setError("Failed to load inventory data.");
+            const [inventoryResponse, cardsResponse, serversResponse] = await Promise.all([
+                axiosClient.get("/manager/nfc-requests"),
+                axiosClient.get("/nfc-cards"),
+                axiosClient.get("/servers"),
+            ]);
+            setRequests(inventoryResponse.data.requests || []);
+            setMetrics(inventoryResponse.data.metrics || {});
+            setCards(cardsResponse.data.data || []);
+            setServers((serversResponse.data.data || []).filter((server) => server.is_active && server.server));
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to load NFC inventory.");
         } finally {
             setLoading(false);
         }
@@ -40,141 +38,154 @@ export default function NfcCards() {
         fetchData();
     }, []);
 
-    const handleModalSuccess = () => {
-        setIsModalOpen(false);
-        fetchData();
-    };
+    const assignCard = async (cardId) => {
+        const serverId = selection[cardId];
+        if (!serverId) return;
 
-    const getStatusBadge = (status) => {
-        let styleClass = "neutral";
-        if (status === "PENDING") {
-            styleClass = "warning";
-        } else if (status === "APPROVED") {
-            styleClass = "success";
-        } else if (status === "REJECTED") {
-            styleClass = "danger";
+        setAssigning(cardId);
+        setError("");
+        try {
+            await axiosClient.post(`/nfc-cards/${cardId}/assign`, { server_id: Number(serverId) });
+            setSelection((current) => ({ ...current, [cardId]: "" }));
+            await fetchData();
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to assign this card.");
+        } finally {
+            setAssigning(null);
         }
-
-        return (
-            <span className={`status-pill ${styleClass}`}>
-                {status}
-            </span>
-        );
     };
+
+    const statusBadge = (status) => (
+        <span className={`status-pill ${status === "APPROVED" ? "active" : status === "REJECTED" ? "inactive" : "neutral"}`}>
+            {status}
+        </span>
+    );
 
     return (
-        <div className="page space-y-8">
-            {/* Header */}
+        <div className="page space-y-6">
             <div className="page-header">
                 <div className="page-title">
-                    <h1>NFC Cards Inventory</h1>
-                    <p>Manage your restaurant's NFC cards and orders</p>
+                    <h1>NFC Inventory</h1>
+                    <p>Link available restaurant cards directly to active employee profiles.</p>
                 </div>
-                <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="button"
-                >
-                    <Plus size={18} /> Request Cards from Admin
+                <button className="button" type="button" onClick={() => setIsModalOpen(true)}>
+                    <Plus size={18} /> Request cards
                 </button>
             </div>
 
-            {error && (
-                <div className="alert">
-                    <ShieldAlert size={16} className="shrink-0" />
-                    <span>{error}</span>
-                </div>
-            )}
+            {error && <div className="alert"><ShieldAlert size={16} /> {error}</div>}
 
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="panel p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-success-soft text-success flex items-center justify-center shrink-0 shadow-sm border border-success-soft">
-                        <CreditCard size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-muted tracking-wider uppercase">Active Cards</p>
-                        <p className="text-3xl font-bold text-text-main mt-1">{metrics.total_active}</p>
-                    </div>
-                </div>
-
-                <div className="panel p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary-soft">
-                        <Package size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-muted tracking-wider uppercase">Available Inventory</p>
-                        <p className="text-3xl font-bold text-text-main mt-1">{metrics.available_inventory}</p>
-                    </div>
-                </div>
-
-                <div className="panel p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-warning-soft text-warning flex items-center justify-center shrink-0 shadow-sm border border-warning-soft">
-                        <Clock size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-muted tracking-wider uppercase">Pending Requests</p>
-                        <p className="text-3xl font-bold text-text-main mt-1">{metrics.pending_requests}</p>
-                    </div>
-                </div>
+            <div className="stats-grid compact-stats">
+                <Metric icon={CreditCard} label="Assigned cards" value={metrics.total_active || 0} />
+                <Metric icon={Package} label="Available stock" value={metrics.available_inventory || 0} />
+                <Metric icon={Clock} label="Pending requests" value={metrics.pending_requests || 0} />
             </div>
 
-            {/* Request History Section */}
-            <section className="panel mt-8">
-                <div className="p-5 border-b border-line flex items-center justify-between bg-surface-muted/30">
-                    <h2 className="text-lg font-bold text-text-main flex items-center gap-2">Recent Card Orders</h2>
+            <section className="panel">
+                <div className="panel-header">
+                    <div>
+                        <h2>Card records</h2>
+                        <p className="panel-subtitle">Only unassigned stock can be mapped to an employee.</p>
+                    </div>
                 </div>
-                <div className="table-wrap">
+                <div className="table-wrap responsive-table border-0 rounded-none">
                     <table className="data-table">
                         <thead>
-                            <tr>
-                                <th>Request Date</th>
-                                <th>Quantity</th>
-                                <th>Status</th>
-                                <th>Notes</th>
-                            </tr>
+                            <tr><th>Card UID</th><th>Status</th><th>Employee</th><th>Assignment</th></tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr>
-                                    <td colSpan={4} className="loading-state">
-                                        Loading inventory history...
+                                <tr><td colSpan={4} className="loading-state">Loading cards...</td></tr>
+                            ) : cards.length === 0 ? (
+                                <tr><td colSpan={4} className="empty-state">No cards have been distributed to this restaurant.</td></tr>
+                            ) : cards.map((card) => (
+                                <tr key={card.id}>
+                                    <td data-label="Card UID"><span className="code-pill">{card.uid}</span></td>
+                                    <td data-label="Status">
+                                        <span className={`status-pill ${card.is_active ? "active" : "inactive"}`}>
+                                            {card.is_active ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td data-label="Employee">
+                                        {card.server?.user?.full_name ? (
+                                            <span className="identity"><UserRound size={16} /> {card.server.user.full_name}</span>
+                                        ) : <span className="muted">Unassigned</span>}
+                                    </td>
+                                    <td data-label="Assignment">
+                                        {card.server_id ? (
+                                            <span className="muted text-sm">Already linked</span>
+                                        ) : (
+                                            <div className="inline-assignment">
+                                                <select
+                                                    className="select"
+                                                    aria-label={`Employee for card ${card.uid}`}
+                                                    value={selection[card.id] || ""}
+                                                    onChange={(event) => setSelection((current) => ({ ...current, [card.id]: event.target.value }))}
+                                                >
+                                                    <option value="">Select active employee</option>
+                                                    {servers.map((employee) => (
+                                                        <option key={employee.server.id} value={employee.server.id}>
+                                                            {employee.full_name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    className="button"
+                                                    type="button"
+                                                    disabled={!selection[card.id] || assigning === card.id || !card.is_active}
+                                                    onClick={() => assignCard(card.id)}
+                                                >
+                                                    {assigning === card.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                                                    Assign
+                                                </button>
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
-                            ) : requests.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="empty-state">
-                                        No requests found. Click the button above to request inventory.
-                                    </td>
-                                </tr>
-                            ) : (
-                                requests.map((req) => (
-                                    <tr key={req.id}>
-                                        <td className="text-muted font-medium">
-                                            {new Date(req.created_at).toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            <span className="font-bold text-text-main">{req.quantity} Cards</span>
-                                        </td>
-                                        <td>
-                                            {getStatusBadge(req.status)}
-                                        </td>
-                                        <td className="text-muted max-w-[250px] truncate" title={req.notes}>
-                                            {req.notes || "—"}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                            ))}
                         </tbody>
                     </table>
                 </div>
             </section>
 
-            {/* Modal */}
-            <RequestCardsModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
-                onSuccess={handleModalSuccess} 
+            <section className="panel">
+                <div className="panel-header"><h2>Recent card requests</h2></div>
+                <div className="table-wrap responsive-table border-0 rounded-none">
+                    <table className="data-table">
+                        <thead><tr><th>Date</th><th>Quantity</th><th>Status</th><th>Notes</th></tr></thead>
+                        <tbody>
+                            {requests.length === 0 ? (
+                                <tr><td colSpan={4} className="empty-state">No card requests yet.</td></tr>
+                            ) : requests.map((request) => (
+                                <tr key={request.id}>
+                                    <td data-label="Date">{new Date(request.created_at).toLocaleDateString()}</td>
+                                    <td data-label="Quantity">{request.quantity}</td>
+                                    <td data-label="Status">{statusBadge(request.status)}</td>
+                                    <td data-label="Notes" className="muted">{request.notes || "—"}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <RequestCardsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={() => {
+                    setIsModalOpen(false);
+                    fetchData();
+                }}
             />
+        </div>
+    );
+}
+
+function Metric({ icon: Icon, label, value }) {
+    return (
+        <div className="stat-card">
+            <div><span>{label}</span><strong>{value}</strong></div>
+            <div className="icon-tile grid place-items-center"><Icon size={24} /></div>
         </div>
     );
 }

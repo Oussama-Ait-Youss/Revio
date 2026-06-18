@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToRestaurantTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Review extends Model
 {
+    use BelongsToRestaurantTenant;
     protected $fillable = [
         'rating',
         'comment',

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\BelongsToRestaurantTenant;
 
 class Server extends Model
 {
-    use SoftDeletes;
+    use BelongsToRestaurantTenant, SoftDeletes;
 
     protected $fillable = ['user_id', 'restaurant_id', 'phone', 'total_reviews','google_review_url'];
 
