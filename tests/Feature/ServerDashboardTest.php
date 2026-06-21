@@ -21,8 +21,9 @@ class ServerDashboardTest extends TestCase
         $serverRole = Role::create(['name' => Role::SERVER]);
         $restaurant = Restaurant::create([
             'name' => 'Test Restaurant',
-            'address' => 'Test Address',
+            'address' => '123 Test Street',
             'phone' => '1234567890',
+            'status' => 'ACTIVE',
         ]);
 
         // 2. Create User with Server role

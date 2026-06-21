@@ -4,12 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import axiosClient from "../api/axios";
 import {
-    LayoutDashboard, Store, LogOut, Menu, X, Sun, Moon, UtensilsCrossed, CreditCard
+    LayoutDashboard, Store, LogOut, Menu, X, Sun, Moon, UtensilsCrossed, CreditCard, Users
 } from "lucide-react";
 
 const adminNav = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { label: "Restaurants", icon: Store, path: "/admin/restaurants" },
+    { label: "Servers Zone", icon: Users, path: "/admin/servers" },
     { label: "NFC Logistics", icon: CreditCard, path: "/admin/nfc-management" },
 ];
 
