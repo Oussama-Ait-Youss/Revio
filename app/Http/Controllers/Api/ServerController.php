@@ -277,7 +277,7 @@ class ServerController extends Controller
         $user = $request->user();
     
         $server = Server::where('user_id', $user->id)
-            ->with(['user', 'nfcCard'])
+            ->with(['user', 'nfcCard', 'reviews'])
             ->withCount('reviews')
             ->first();
     
@@ -287,7 +287,7 @@ class ServerController extends Controller
             ], 404);
         }
     
-        $reviews = $server->reviews()->latest()->get();
+        $reviews = $server->reviews->sortByDesc('created_at');
     
         return response()->json([
             'server' => $server,
